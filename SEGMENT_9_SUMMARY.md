@@ -3,15 +3,17 @@
 ## Overview
 Complete backend implementation using Supabase as the database and API layer. Includes database schema design, API endpoints, authentication, real-time triggers, and deployment configuration.
 
-## Progress: 3.5/12 tasks complete (29%)
+## Progress: 5/12 tasks complete (42%)
 
 ### ✅ Completed Tasks
 - **Task 1**: Database Schema Design & Migrations ✅
 - **Task 2**: Row Level Security (RLS) Policies ✅
 - **Task 3**: Authentication & User Management ✅
+- **Task 4**: Campaign API Endpoints ✅
+- **Task 5**: Lead API Endpoints ✅
 
 ### 🚧 In Progress
-- **Task 4**: Campaign API Endpoints (4/6 endpoints complete)
+- **Task 6**: Data Source & Scraping API Endpoints
 
 ### 📋 Pending Tasks
 - **Task 5**: Lead API Endpoints
@@ -123,19 +125,61 @@ Complete backend implementation using Supabase as the database and API layer. In
 - CRUD operations with validation
 - Error handling and CORS support
 
-### Task 5: Lead API Endpoints
+### Task 5: Lead API Endpoints ✅
+**Status**: Complete
 **Goal**: Create Edge Functions for all lead operations including bulk operations
 
 **Deliverables**:
-- [ ] GET /leads - list with filters, sorting, pagination
-- [ ] GET /leads/:id - detail view
-- [ ] POST /leads - create new lead
-- [ ] PUT /leads/:id - update lead
-- [ ] POST /leads/:id/qualify - qualify lead with scoring
-- [ ] POST /leads/:id/assign - assign lead to user
-- [ ] POST /leads/bulk-update - bulk update operations
-- [ ] POST /leads/bulk-assign - bulk assign operations
-- [ ] DELETE /leads/bulk - bulk delete operations
+- [x] GET /leads - list with filters, sorting, pagination (leads/index.ts - 80 lines)
+- [x] GET /leads/:id - detail view (lead-detail/index.ts - 120 lines)
+- [x] POST /leads/create - create new lead (lead-create/index.ts - 75 lines)
+- [x] PUT /leads/:id - update lead (included in lead-detail - supports all fields)
+- [x] DELETE /leads/:id - delete lead (included in lead-detail)
+- [x] POST /leads/:id/qualify - qualify lead with scoring (lead-qualify/index.ts - 85 lines)
+- [x] POST /leads/:id/assign - assign lead to user (lead-assign/index.ts - 85 lines)
+- [x] POST /leads/bulk-update - bulk update operations (lead-bulk/index.ts - 165 lines)
+- [x] POST /leads/bulk-assign - bulk assign operations (included in lead-bulk)
+- [x] DELETE /leads/bulk - bulk delete operations (included in lead-bulk)
+
+**Files Created**:
+- `packages/supabase/functions/leads/index.ts` (80 lines)
+- `packages/supabase/functions/lead-detail/index.ts` (120 lines)
+- `packages/supabase/functions/lead-create/index.ts` (75 lines)
+- `packages/supabase/functions/lead-qualify/index.ts` (85 lines)
+- `packages/supabase/functions/lead-assign/index.ts` (85 lines)
+- `packages/supabase/functions/lead-bulk/index.ts` (165 lines)
+Total: 610 lines
+
+**Features Implemented**:
+- Complete CRUD operations with field mapping (firstName → first_name, etc.)
+- Filtering by status, priority, campaignId, assignedTo, search query
+- Lead qualification with scoring (1-5) and criteria evaluation
+- Automatic status updates (qualified/rejected based on score)
+- Lead assignment with email lookup and notification creation
+- Bulk operations (update, assign, delete) with 100-lead limit
+- Automatic notifications on assignment
+- JSONB field support (contact, company_data, source_data, qualification_data, custom_fields)
+- Tags array support
+- RLS-based access control (agency-scoped)
+
+### Task 6: Data Source & Scraping API Endpoints (In Progress - 0/13 endpoints)
+**Status**: Not Started
+**Goal**: Create Edge Functions for data source management and job control
+
+**Pending Deliverables**:
+- [ ] GET /data-sources - list data sources
+- [ ] GET /data-sources/:id - data source detail
+- [ ] POST /data-sources/create - create data source
+- [ ] PUT /data-sources/:id - update data source
+- [ ] DELETE /data-sources/:id - delete data source
+- [ ] POST /data-sources/:id/test - test connection
+- [ ] GET /data-sources/:id/jobs - list scraping jobs
+- [ ] GET /jobs/:id - job detail
+- [ ] GET /jobs/:id/logs - job execution logs
+- [ ] POST /jobs/:id/start - start job
+- [ ] POST /jobs/:id/pause - pause job
+- [ ] POST /jobs/:id/resume - resume job
+- [ ] POST /jobs/:id/cancel - cancel job
 
 ### Task 6: Data Source & Scraping API Endpoints
 **Goal**: Create Edge Functions for data source management and job control
