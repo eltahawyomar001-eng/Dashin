@@ -34,6 +34,7 @@ import {
   LogOut,
   Menu,
   X,
+  FileText,
 } from 'lucide-react';
 
 export interface DashboardLayoutProps {
@@ -88,6 +89,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               <NavSection title="Analytics">
                 <NavLink href="/dashboard/analytics" icon={<BarChart3 className="h-5 w-5" />} label="Overview" />
                 <NavLink href="/dashboard/analytics/campaigns" icon={<TrendingUp className="h-5 w-5" />} label="Campaign Analytics" />
+                <NavLink href="/dashboard/analytics/leads" icon={<Users className="h-5 w-5" />} label="Lead Analytics" />
+                <NavLink href="/dashboard/reports" icon={<FileText className="h-5 w-5" />} label="Reports" />
               </NavSection>
             </Can>
 
