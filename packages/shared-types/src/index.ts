@@ -6,6 +6,9 @@ export * from './scraping';
 // Export campaign types
 export * from './campaigns';
 
+// Export analytics types
+export * from './analytics';
+
 // User Roles
 export type UserRole = 'super_admin' | 'agency_admin' | 'researcher' | 'client';
 

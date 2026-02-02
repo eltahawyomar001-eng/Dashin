@@ -29,6 +29,9 @@ export type Permission =
   | 'lead:delete'
   | 'lead:approve'
   | 'lead:reject'
+  // Analytics permissions
+  | 'analytics:view'
+  | 'analytics:export'
   // Scraping permissions
   | 'scrape:view'
   | 'scrape:create'
@@ -82,6 +85,8 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'lead:delete',
     'lead:approve',
     'lead:reject',
+    'analytics:view',
+    'analytics:export',
     'scrape:view',
     'scrape:create',
     'scrape:delete',
@@ -123,6 +128,8 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'lead:delete',
     'lead:approve',
     'lead:reject',
+    'analytics:view',
+    'analytics:export',
     'scrape:view',
     'datasources:view',
     'datasources:update',
@@ -143,6 +150,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'lead:view',
     'lead:create',
     'lead:update',
+    'analytics:view',
     'scrape:view',
     'scrape:create',
     'datasources:view',
@@ -160,6 +168,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     // Read-only campaign and leads
     'campaign:view',
     'lead:view',
+    'analytics:view',
     'cost:view',
   ],
 };

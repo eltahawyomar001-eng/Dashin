@@ -26,6 +26,7 @@ import {
   Users,
   Target,
   TrendingUp,
+  BarChart3,
   DollarSign,
   Settings,
   Bell,
@@ -80,6 +81,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             <Can permission="lead:view">
               <NavSection title="Leads">
                 <NavLink href="/dashboard/leads" icon={<Users className="h-5 w-5" />} label="Leads Inventory" />
+              </NavSection>
+            </Can>
+
+            <Can permission="analytics:view">
+              <NavSection title="Analytics">
+                <NavLink href="/dashboard/analytics" icon={<BarChart3 className="h-5 w-5" />} label="Overview" />
+                <NavLink href="/dashboard/analytics/campaigns" icon={<TrendingUp className="h-5 w-5" />} label="Campaign Analytics" />
               </NavSection>
             </Can>
 

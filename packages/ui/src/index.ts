@@ -94,6 +94,12 @@ export type { LeadCardProps, LeadListProps } from './components/LeadCard';
 export { LeadQualificationForm } from './components/LeadQualificationForm';
 export type { LeadQualificationFormProps, QualificationFormData } from './components/LeadQualificationForm';
 
+export { LineChart, AreaChart, BarChart, PieChart, DonutChart } from './components/Charts';
+export type { LineChartProps, AreaChartProps, BarChartProps, PieChartProps, DonutChartProps } from './components/Charts';
+
+export { MetricCard, KPICard, StatCard as AnalyticsStatCard, TrendIndicator, Sparkline } from './components/MetricCards';
+export type { MetricCardProps, KPICardProps, StatCardProps as AnalyticsStatCardProps, TrendIndicatorProps, SparklineProps } from './components/MetricCards';
+
 // Utils
 export { cn } from './lib/utils';
 

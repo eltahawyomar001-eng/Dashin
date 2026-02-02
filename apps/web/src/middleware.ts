@@ -4,10 +4,10 @@ import { createServerClient } from '@dashin/supabase';
 
 // Define protected routes by role
 const ROLE_ROUTES = {
-  super_admin: ['/dashboard', '/admin', '/agencies', '/users', '/campaigns', '/leads', '/sources'],
-  agency_admin: ['/dashboard', '/campaigns', '/clients', '/leads', '/researchers', '/sources'],
-  researcher: ['/dashboard', '/campaigns', '/leads', '/scraping', '/cleanroom', '/time-logs', '/sources'],
-  client: ['/dashboard', '/campaigns', '/leads'],
+  super_admin: ['/dashboard', '/admin', '/agencies', '/users', '/campaigns', '/leads', '/analytics', '/sources'],
+  agency_admin: ['/dashboard', '/campaigns', '/clients', '/leads', '/researchers', '/analytics', '/sources'],
+  researcher: ['/dashboard', '/campaigns', '/leads', '/scraping', '/cleanroom', '/time-logs', '/analytics', '/sources'],
+  client: ['/dashboard', '/campaigns', '/leads', '/analytics'],
 };
 
 // Public routes that don't require authentication
