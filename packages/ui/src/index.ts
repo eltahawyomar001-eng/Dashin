@@ -12,5 +12,8 @@ export {
 } from './components/Card';
 export type { CardProps } from './components/Card';
 
+export { Input } from './components/Input';
+export type { InputProps } from './components/Input';
+
 // Utils
 export { cn } from './lib/utils';

@@ -16,7 +16,10 @@
     "react-dom": "^18.2.0",
     "lucide-react": "^0.314.0",
     "@dashin/ui": "workspace:*",
-    "@dashin/shared-types": "workspace:*"
+    "@dashin/shared-types": "workspace:*",
+    "@dashin/supabase": "workspace:*",
+    "@dashin/auth": "workspace:*",
+    "@dashin/rbac": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",

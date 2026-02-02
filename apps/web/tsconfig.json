@@ -21,7 +21,10 @@
     "paths": {
       "@/*": ["./src/*"],
       "@dashin/ui": ["../../packages/ui/src"],
-      "@dashin/shared-types": ["../../packages/shared-types/src"]
+      "@dashin/shared-types": ["../../packages/shared-types/src"],
+      "@dashin/supabase": ["../../packages/supabase/src"],
+      "@dashin/auth": ["../../packages/auth/src"],
+      "@dashin/rbac": ["../../packages/rbac/src"]
     },
     "strictNullChecks": true,
     "strictFunctionTypes": true,
