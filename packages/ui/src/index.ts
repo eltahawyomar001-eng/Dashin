@@ -85,7 +85,17 @@ export type { DataSourceCardProps, DataSourceListProps } from './components/Data
 export { ScrapingQueue, ScrapingQueueItem } from './components/ScrapingQueue';
 export type { ScrapingQueueProps, ScrapingQueueItemProps } from './components/ScrapingQueue';
 
+export { CampaignCard, CampaignList } from './components/CampaignCard';
+export type { CampaignCardProps, CampaignListProps } from './components/CampaignCard';
+
+export { LeadCard, LeadList, QualificationBadge, PriorityIndicator } from './components/LeadCard';
+export type { LeadCardProps, LeadListProps } from './components/LeadCard';
+
+export { LeadQualificationForm } from './components/LeadQualificationForm';
+export type { LeadQualificationFormProps, QualificationFormData } from './components/LeadQualificationForm';
+
 // Utils
 export { cn } from './lib/utils';
+
 
 

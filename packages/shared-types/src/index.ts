@@ -3,6 +3,9 @@
 // Export scraping types
 export * from './scraping';
 
+// Export campaign types
+export * from './campaigns';
+
 // User Roles
 export type UserRole = 'super_admin' | 'agency_admin' | 'researcher' | 'client';
 
@@ -21,17 +24,6 @@ export interface Agency {
   id: string;
   name: string;
   status: 'active' | 'inactive' | 'suspended';
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Campaign
-export interface Campaign {
-  id: string;
-  name: string;
-  agencyId: string;
-  clientId: string;
-  status: 'draft' | 'active' | 'paused' | 'completed' | 'archived';
   createdAt: string;
   updatedAt: string;
 }
@@ -59,39 +51,6 @@ export interface ScrapeSession {
   totalRecords: number;
   createdAt: string;
   completedAt: string | null;
-}
-
-// Lead Status
-export type LeadStatus =
-  | 'raw'
-  | 'qualified'
-  | 'enriched'
-  | 'approved'
-  | 'rejected'
-  | 'invalid'
-  | 'bounced';
-
-// Lead
-export interface Lead {
-  id: string;
-  agencyId: string;
-  campaignId: string | null;
-  status: LeadStatus;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  phone: string | null;
-  company: string | null;
-  title: string | null;
-  industry: string | null;
-  linkedinUrl: string | null;
-  source: string | null;
-  researcherId: string | null;
-  approvedBy: string | null;
-  rejectedBy: string | null;
-  rejectionReason: string | null;
-  createdAt: string;
-  updatedAt: string;
 }
 
 // Cleanroom Job

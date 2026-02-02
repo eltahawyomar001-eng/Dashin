@@ -4,9 +4,9 @@ import { createServerClient } from '@dashin/supabase';
 
 // Define protected routes by role
 const ROLE_ROUTES = {
-  super_admin: ['/dashboard', '/admin', '/agencies', '/users', '/sources'],
+  super_admin: ['/dashboard', '/admin', '/agencies', '/users', '/campaigns', '/leads', '/sources'],
   agency_admin: ['/dashboard', '/campaigns', '/clients', '/leads', '/researchers', '/sources'],
-  researcher: ['/dashboard', '/scraping', '/cleanroom', '/time-logs', '/sources'],
+  researcher: ['/dashboard', '/campaigns', '/leads', '/scraping', '/cleanroom', '/time-logs', '/sources'],
   client: ['/dashboard', '/campaigns', '/leads'],
 };
 

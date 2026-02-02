@@ -24,6 +24,7 @@ import {
   Globe,
   Clock,
   Users,
+  Target,
   TrendingUp,
   DollarSign,
   Settings,
@@ -70,6 +71,18 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               <NavLink href="/dashboard" icon={<LayoutDashboard className="h-5 w-5" />} label="Dashboard" />
             </NavSection>
 
+            <Can permission="campaign:view">
+              <NavSection title="Campaigns">
+                <NavLink href="/dashboard/campaigns" icon={<Target className="h-5 w-5" />} label="Campaigns" />
+              </NavSection>
+            </Can>
+
+            <Can permission="lead:view">
+              <NavSection title="Leads">
+                <NavLink href="/dashboard/leads" icon={<Users className="h-5 w-5" />} label="Leads Inventory" />
+              </NavSection>
+            </Can>
+
             <Can permission="datasources:view">
               <NavSection title="Data Sources">
                 <NavLink href="/dashboard/sources" icon={<Globe className="h-5 w-5" />} label="Data Sources" />
@@ -81,12 +94,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               <NavSection title="Data Collection">
                 <NavLink href="/dashboard/scraping" icon={<Search className="h-5 w-5" />} label="Scraping" />
                 <NavLink href="/dashboard/cleanroom" icon={<Database className="h-5 w-5" />} label="Cleanroom" />
-              </NavSection>
-            </Can>
-
-            <Can permission="lead:view">
-              <NavSection title="Leads">
-                <NavLink href="/dashboard/leads" icon={<Users className="h-5 w-5" />} label="Leads Inventory" />
               </NavSection>
             </Can>
 
