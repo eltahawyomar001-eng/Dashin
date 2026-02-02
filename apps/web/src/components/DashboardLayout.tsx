@@ -21,6 +21,8 @@ import {
   LayoutDashboard,
   Search,
   Database,
+  Globe,
+  Clock,
   Users,
   TrendingUp,
   DollarSign,
@@ -67,6 +69,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             <NavSection title="Main">
               <NavLink href="/dashboard" icon={<LayoutDashboard className="h-5 w-5" />} label="Dashboard" />
             </NavSection>
+
+            <Can permission="datasources:view">
+              <NavSection title="Data Sources">
+                <NavLink href="/dashboard/sources" icon={<Globe className="h-5 w-5" />} label="Data Sources" />
+                <NavLink href="/dashboard/sources/jobs" icon={<Clock className="h-5 w-5" />} label="Scraping Jobs" />
+              </NavSection>
+            </Can>
 
             <Can permission="scrape:view">
               <NavSection title="Data Collection">

@@ -33,6 +33,12 @@ export type Permission =
   | 'scrape:view'
   | 'scrape:create'
   | 'scrape:delete'
+  // Data source permissions
+  | 'datasources:view'
+  | 'datasources:create'
+  | 'datasources:update'
+  | 'datasources:delete'
+  | 'datasources:run'
   // Cleanroom permissions
   | 'cleanroom:view'
   | 'cleanroom:create'
@@ -79,6 +85,11 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'scrape:view',
     'scrape:create',
     'scrape:delete',
+    'datasources:view',
+    'datasources:create',
+    'datasources:update',
+    'datasources:delete',
+    'datasources:run',
     'cleanroom:view',
     'cleanroom:create',
     'cleanroom:execute',
@@ -113,6 +124,9 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'lead:approve',
     'lead:reject',
     'scrape:view',
+    'datasources:view',
+    'datasources:update',
+    'datasources:run',
     'cleanroom:view',
     'cleanroom:create',
     'cleanroom:execute',
@@ -131,6 +145,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'lead:update',
     'scrape:view',
     'scrape:create',
+    'datasources:view',
+    'datasources:create',
+    'datasources:update',
+    'datasources:run',
     'cleanroom:view',
     'research_iq:view_own',
     'time_log:view_own',

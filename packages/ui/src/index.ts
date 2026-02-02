@@ -76,6 +76,15 @@ export type { ActivityFeedProps, ActivitySectionProps, ActivityItem } from './co
 export { ChartContainer, ChartTimeRangeSelector, ChartLegend } from './components/ChartContainer';
 export type { ChartContainerProps, ChartTimeRangeSelectorProps, ChartLegendProps, ChartLegendItem, TimeRangeOption } from './components/ChartContainer';
 
+export { Progress } from './components/Progress';
+export type { ProgressProps } from './components/Progress';
+
+export { DataSourceCard, DataSourceList } from './components/DataSourceCard';
+export type { DataSourceCardProps, DataSourceListProps } from './components/DataSourceCard';
+
+export { ScrapingQueue, ScrapingQueueItem } from './components/ScrapingQueue';
+export type { ScrapingQueueProps, ScrapingQueueItemProps } from './components/ScrapingQueue';
+
 // Utils
 export { cn } from './lib/utils';
 

@@ -1,5 +1,8 @@
 // Core types for Dashin Research platform
 
+// Export scraping types
+export * from './scraping';
+
 // User Roles
 export type UserRole = 'super_admin' | 'agency_admin' | 'researcher' | 'client';
 
