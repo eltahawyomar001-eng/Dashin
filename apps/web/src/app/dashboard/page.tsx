@@ -1,19 +1,12 @@
 'use client';
 
-import { useAuth, useUser } from '@dashin/auth';
-import { useRouter } from 'next/navigation';
-import { Button, Card, CardHeader, CardTitle, CardContent } from '@dashin/ui';
-import { LogOut, User, Building2, Shield } from 'lucide-react';
+import { useUser } from '@dashin/auth';
+import { Card, CardHeader, CardTitle, CardContent, PageHeader, Container, Badge } from '@dashin/ui';
+import { Building2, Shield, Users } from 'lucide-react';
+import { DashboardLayout } from '../../components/DashboardLayout';
 
 export default function DashboardPage() {
-  const { signOut } = useAuth();
   const user = useUser();
-  const router = useRouter();
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/auth/login');
-  };
 
   const getRoleIcon = () => {
     switch (user?.role) {
@@ -22,11 +15,10 @@ export default function DashboardPage() {
       case 'agency_admin':
         return <Building2 className="h-5 w-5 text-primary-400" />;
       case 'researcher':
-        return <User className="h-5 w-5 text-blue-400" />;
       case 'client':
-        return <User className="h-5 w-5 text-slate-400" />;
+        return <Users className="h-5 w-5 text-blue-400" />;
       default:
-        return <User className="h-5 w-5" />;
+        return <Users className="h-5 w-5" />;
     }
   };
 
@@ -47,27 +39,33 @@ export default function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="glass rounded-2xl p-8">
-          <p className="text-slate-400">Loading...</p>
-        </div>
-      </div>
+      <DashboardLayout>
+        <Container>
+          <div className="flex min-h-[50vh] items-center justify-center">
+            <div className="glass rounded-2xl p-8">
+              <p className="text-slate-400">Loading...</p>
+            </div>
+          </div>
+        </Container>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-gradient mb-2 text-4xl font-bold">Dashboard</h1>
-            <p className="text-slate-400">Welcome back to Dashin Research</p>
-          </div>
-          <Button variant="ghost" onClick={handleSignOut} leftIcon={<LogOut className="h-4 w-4" />}>
-            Sign Out
-          </Button>
-        </div>
+    <DashboardLayout>
+      <Container>
+        <PageHeader
+          title="Dashboard"
+          description="Welcome back to Dashin Research"
+          actions={
+            <Badge variant="success">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                Online
+              </span>
+            </Badge>
+          }
+        />
 
         {/* User Info Card */}
         <div className="mb-8">
@@ -125,13 +123,14 @@ export default function DashboardPage() {
           <Card variant="glass-subtle">
             <CardContent className="py-6">
               <p className="text-center text-slate-400">
-                <strong>Segment 2 Complete:</strong> Authentication and RBAC are now active. Domain
+                <strong>Segment 3 Complete:</strong> Layout and Design System are now active. Domain
                 features will be built in subsequent segments.
               </p>
             </CardContent>
           </Card>
         </div>
-      </div>
-    </div>
+      </Container>
+    </DashboardLayout>
   );
 }
+
