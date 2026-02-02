@@ -87,13 +87,7 @@ export default function LoginPage() {
               </Button>
 
               <div className="text-center text-sm text-slate-400">
-                Don't have an account?{' '}
-                <Link
-                  href="/auth/signup"
-                  className="text-primary-400 hover:text-primary-300 transition-colors"
-                >
-                  Contact your administrator
-                </Link>
+                Don&apos;t have an account? Contact your administrator for access.
               </div>
             </form>
           </CardContent>

@@ -129,12 +129,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Create user profile
-      const { error: profileError } = await supabase.from('users').insert({
+      type UserInsert = {
+        id: string;
+        email: string;
+        role: UserRole;
+        agency_id: string | null;
+      };
+      
+      const userInsert: UserInsert = {
         id: authData.user.id,
         email,
         role,
         agency_id: agencyId ?? null,
-      });
+      };
+      
+      const { error: profileError } = await supabase.from('users').insert(userInsert as any);
 
       if (profileError) {
         // Rollback: delete auth user if profile creation fails

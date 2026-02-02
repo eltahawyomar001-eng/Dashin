@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useUser } from '@dashin/auth';
 import type { UserRole } from '@dashin/shared-types';
 import {
@@ -92,7 +93,7 @@ export function withPermission<P extends object>(
     const { hasPermission: checkPermission } = usePermissions();
 
     if (!checkPermission(permission)) {
-      return fallback ? <>{fallback(props)}</> : null;
+      return fallback ? <>{React.createElement(fallback, props)}</> : null;
     }
 
     return <Component {...props} />;
@@ -109,7 +110,7 @@ export function withRole<P extends object>(
     const userRole = useRole();
 
     if (!userRole || !allowedRoles.includes(userRole)) {
-      return fallback ? <>{fallback(props)}</> : null;
+      return fallback ? React.createElement(fallback, props) : null;
     }
 
     return <Component {...props} />;

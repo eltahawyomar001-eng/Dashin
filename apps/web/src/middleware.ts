@@ -35,12 +35,17 @@ export async function middleware(request: NextRequest) {
   }
 
   // Get user profile with role
-  const { data: user } = await supabase
+  const { data: userData } = await supabase
     .from('users')
     .select('role, agency_id')
     .eq('id', session.user.id)
     .single();
 
+  type UserRole = 'super_admin' | 'agency_admin' | 'researcher' | 'client';
+  type UserData = { role: UserRole; agency_id: string | null };
+  
+  const user = userData as UserData | null;
+  
   if (!user) {
     return NextResponse.redirect(new URL('/auth/login', request.url));
   }
@@ -51,7 +56,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check role-based access
-  const userRole = user.role as keyof typeof ROLE_ROUTES;
+  const userRole = user.role;
   const allowedRoutes = ROLE_ROUTES[userRole] || [];
 
   const hasAccess = allowedRoutes.some((route) => pathname.startsWith(route));
