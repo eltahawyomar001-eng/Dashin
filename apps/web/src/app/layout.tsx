@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '@dashin/auth';
 import { ToastProvider } from '@dashin/ui';
+import { QueryProvider } from '../providers/QueryProvider';
 import './globals.css';
 
 const inter = Inter({
@@ -30,9 +31,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen antialiased">
-        <ToastProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </ToastProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </ToastProvider>
+        </QueryProvider>
       </body>
     </html>
   );

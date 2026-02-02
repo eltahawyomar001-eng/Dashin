@@ -9,6 +9,12 @@ export * from './campaigns';
 // Export analytics types
 export * from './analytics';
 
+// Export API types
+export * from './api';
+
+// Export validation schemas
+export * from './validation';
+
 // User Roles
 export type UserRole = 'super_admin' | 'agency_admin' | 'researcher' | 'client';
 

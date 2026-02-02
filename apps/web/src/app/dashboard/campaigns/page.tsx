@@ -1,152 +1,71 @@
 'use client';
 
 import { useState } from 'react';
-import { Campaign, CampaignStatus, CreateCampaignPayload } from '@dashin/shared-types';
-import { CampaignList, Input, Modal, Button, useToast } from '@dashin/ui';
+import { CampaignStatus, CreateCampaignPayload } from '@dashin/shared-types';
+import { CampaignList, Input, Modal, Button } from '@dashin/ui';
 import { Plus, Search, Filter, TrendingUp, Target, Users, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-// Mock data
-const MOCK_CAMPAIGNS: Campaign[] = [
-  {
-    id: '1',
-    name: 'Q1 2024 Tech Startups',
-    description: 'Targeting Series A/B tech startups in SF Bay Area',
-    status: 'active',
-    targetCompanies: 500,
-    targetLeads: 1500,
-    qualifiedLeads: 342,
-    assignedLeads: 156,
-    rejectedLeads: 89,
-    startDate: '2024-01-01T00:00:00Z',
-    endDate: '2024-03-31T23:59:59Z',
-    agencyId: 'agency-1',
-    clientId: 'client-1',
-    createdBy: 'user-1',
-    createdAt: '2023-12-15T10:00:00Z',
-    updatedAt: '2024-01-20T15:30:00Z',
-  },
-  {
-    id: '2',
-    name: 'Enterprise SaaS Expansion',
-    description: 'Mid-market to enterprise SaaS companies looking to scale',
-    status: 'active',
-    targetCompanies: 300,
-    targetLeads: 900,
-    qualifiedLeads: 512,
-    assignedLeads: 298,
-    rejectedLeads: 134,
-    startDate: '2024-01-15T00:00:00Z',
-    endDate: '2024-06-30T23:59:59Z',
-    agencyId: 'agency-1',
-    createdBy: 'user-1',
-    createdAt: '2024-01-10T09:00:00Z',
-    updatedAt: '2024-01-21T11:20:00Z',
-  },
-  {
-    id: '3',
-    name: 'Healthcare AI Initiative',
-    description: 'Healthcare providers adopting AI solutions',
-    status: 'paused',
-    targetCompanies: 200,
-    targetLeads: 600,
-    qualifiedLeads: 145,
-    assignedLeads: 67,
-    rejectedLeads: 45,
-    startDate: '2024-02-01T00:00:00Z',
-    endDate: '2024-05-31T23:59:59Z',
-    createdBy: 'user-2',
-    createdAt: '2024-01-25T14:00:00Z',
-    updatedAt: '2024-02-10T16:45:00Z',
-  },
-  {
-    id: '4',
-    name: 'FinTech Summer Campaign',
-    description: 'Financial services companies exploring blockchain solutions',
-    status: 'draft',
-    targetCompanies: 400,
-    targetLeads: 1200,
-    qualifiedLeads: 0,
-    assignedLeads: 0,
-    rejectedLeads: 0,
-    startDate: '2024-06-01T00:00:00Z',
-    endDate: '2024-08-31T23:59:59Z',
-    clientId: 'client-2',
-    createdBy: 'user-1',
-    createdAt: '2024-02-01T10:00:00Z',
-    updatedAt: '2024-02-05T12:00:00Z',
-  },
-];
+import { useCampaigns, useCreateCampaign, useUpdateCampaignStatus } from '../../../hooks/useCampaigns';
+import { CampaignListSkeleton } from '../../../components/campaigns/CampaignListSkeleton';
 
 export default function CampaignsPage() {
   const router = useRouter();
-  const { showToast } = useToast();
   
-  const [campaigns, setCampaigns] = useState<Campaign[]>(MOCK_CAMPAIGNS);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'all'>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
 
-  // Filter campaigns
-  const filteredCampaigns = campaigns.filter((campaign) => {
-    const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         campaign.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  // Fetch campaigns with filters
+  const { data: campaignsResponse, isLoading } = useCampaigns({
+    page: 1,
+    pageSize: 50,
+    status: statusFilter === 'all' ? undefined : statusFilter,
+    search: searchTerm || undefined,
   });
 
-  // Calculate metrics
+  // Mutations
+  const createCampaign = useCreateCampaign();
+  const updateStatus = useUpdateCampaignStatus();
+
+  const campaigns = campaignsResponse?.data || [];
+
+  // Calculate metrics from loaded campaigns
   const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
   const totalLeads = campaigns.reduce((sum, c) => sum + c.qualifiedLeads, 0);
   const totalQualified = campaigns.reduce((sum, c) => sum + c.qualifiedLeads, 0);
   const totalAssigned = campaigns.reduce((sum, c) => sum + c.assignedLeads, 0);
 
-  const handleCreateCampaign = (payload: CreateCampaignPayload) => {
-    // In real app, this would call an API
-    const newCampaign: Campaign = {
-      id: `campaign-${Date.now()}`,
-      ...payload,
-      status: 'draft',
-      qualifiedLeads: 0,
-      assignedLeads: 0,
-      rejectedLeads: 0,
-      createdBy: 'current-user',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    setCampaigns([newCampaign, ...campaigns]);
+  const handleCreateCampaign = async (payload: CreateCampaignPayload) => {
+    await createCampaign.mutateAsync(payload);
     setShowCreateModal(false);
-    showToast({ title: 'Success', message: 'Campaign created successfully', type: 'success' });
   };
 
-  const handleEditCampaign = (campaign: Campaign) => {
-    setSelectedCampaign(campaign);
-    setShowCreateModal(true);
+  const handleStatusChange = async (campaignId: string, status: CampaignStatus) => {
+    await updateStatus.mutateAsync({ id: campaignId, status });
   };
 
-  const handleStatusChange = (campaignId: string, status: CampaignStatus) => {
-    setCampaigns(campaigns.map(c => 
-      c.id === campaignId 
-        ? { ...c, status, updatedAt: new Date().toISOString() }
-        : c
-    ));
-    showToast({ title: 'Success', message: `Campaign ${status === 'active' ? 'resumed' : 'paused'}`, type: 'success' });
-  };
-
-  const handleArchiveCampaign = (campaignId: string) => {
-    setCampaigns(campaigns.map(c => 
-      c.id === campaignId 
-        ? { ...c, status: 'archived' as CampaignStatus, updatedAt: new Date().toISOString() }
-        : c
-    ));
-    showToast({ title: 'Success', message: 'Campaign archived', type: 'success' });
+  const handleArchiveCampaign = async (campaignId: string) => {
+    await updateStatus.mutateAsync({ id: campaignId, status: 'archived' });
   };
 
   const handleViewCampaign = (campaignId: string) => {
     router.push(`/dashboard/campaigns/${campaignId}` as any);
   };
+
+  // Show loading skeleton
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Campaigns</h1>
+            <p className="text-gray-400">Loading campaigns...</p>
+          </div>
+        </div>
+        <CampaignListSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 space-y-8">
@@ -159,10 +78,7 @@ export default function CampaignsPage() {
           </p>
         </div>
         <Button
-          onClick={() => {
-            setSelectedCampaign(null);
-            setShowCreateModal(true);
-          }}
+          onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
@@ -249,20 +165,17 @@ export default function CampaignsPage() {
 
       {/* Campaign List */}
       <CampaignList
-        campaigns={filteredCampaigns}
-        onEdit={handleEditCampaign}
+        campaigns={campaigns}
         onStatusChange={handleStatusChange}
         onArchive={handleArchiveCampaign}
         onView={handleViewCampaign}
       />
 
-      {/* Create/Edit Modal */}
+      {/* Create Modal */}
       {showCreateModal && (
         <CreateCampaignModal
-          campaign={selectedCampaign}
           onClose={() => {
             setShowCreateModal(false);
-            setSelectedCampaign(null);
           }}
           onSave={handleCreateCampaign}
         />
@@ -273,20 +186,17 @@ export default function CampaignsPage() {
 
 // Create Campaign Modal Component
 interface CreateCampaignModalProps {
-  campaign: Campaign | null;
   onClose: () => void;
   onSave: (payload: CreateCampaignPayload) => void;
 }
 
-function CreateCampaignModal({ campaign, onClose, onSave }: CreateCampaignModalProps) {
-  const [name, setName] = useState(campaign?.name || '');
-  const [description, setDescription] = useState(campaign?.description || '');
-  const [targetCompanies, setTargetCompanies] = useState(campaign?.targetCompanies || 100);
-  const [targetLeads, setTargetLeads] = useState(campaign?.targetLeads || 300);
-  const [startDate, setStartDate] = useState(
-    campaign?.startDate ? campaign.startDate.split('T')[0] : new Date().toISOString().split('T')[0]
-  );
-  const [endDate, setEndDate] = useState(campaign?.endDate ? campaign.endDate.split('T')[0] : '');
+function CreateCampaignModal({ onClose, onSave }: CreateCampaignModalProps) {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [targetCompanies, setTargetCompanies] = useState(100);
+  const [targetLeads, setTargetLeads] = useState(300);
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -303,7 +213,7 @@ function CreateCampaignModal({ campaign, onClose, onSave }: CreateCampaignModalP
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={campaign ? 'Edit Campaign' : 'Create New Campaign'}>
+    <Modal isOpen={true} onClose={onClose} title="Create New Campaign">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -387,7 +297,7 @@ function CreateCampaignModal({ campaign, onClose, onSave }: CreateCampaignModalP
 
         <div className="flex gap-3 pt-4">
           <Button type="submit" className="flex-1">
-            {campaign ? 'Save Changes' : 'Create Campaign'}
+            Create Campaign
           </Button>
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel

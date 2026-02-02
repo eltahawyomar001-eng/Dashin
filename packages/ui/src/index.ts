@@ -100,6 +100,13 @@ export type { LineChartProps, AreaChartProps, BarChartProps, PieChartProps, Donu
 export { MetricCard, KPICard, StatCard as AnalyticsStatCard, TrendIndicator, Sparkline } from './components/MetricCards';
 export type { MetricCardProps, KPICardProps, StatCardProps as AnalyticsStatCardProps, TrendIndicatorProps, SparklineProps } from './components/MetricCards';
 
+// Form Components
+export { FormField } from './components/form-field';
+export { FormTextarea } from './components/form-textarea';
+export { FormSelect } from './components/form-select';
+export { FormSection } from './components/form-section';
+export { FormError, FormSuccess } from './components/form-messages';
+
 // Utils
 export { cn } from './lib/utils';
 
