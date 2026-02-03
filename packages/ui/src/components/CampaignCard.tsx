@@ -19,7 +19,7 @@ const getStatusColor = (status: CampaignStatus): string => {
     completed: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     archived: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
   };
-  return colors[status] || colors.draft;
+  return (colors[status] || colors.draft) as string;
 };
 
 const getStatusLabel = (status: CampaignStatus): string => {

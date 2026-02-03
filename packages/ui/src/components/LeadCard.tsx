@@ -20,7 +20,7 @@ const getStatusColor = (status: LeadStatus): string => {
     contacted: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
     converted: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   };
-  return colors[status] ?? colors.new;
+  return (colors[status] ?? colors.new) as string;
 };
 
 const getPriorityColor = (priority: LeadPriority): string => {
@@ -30,7 +30,7 @@ const getPriorityColor = (priority: LeadPriority): string => {
     high: 'bg-orange-500/10 text-orange-400',
     urgent: 'bg-red-500/10 text-red-400',
   };
-  return colors[priority] ?? colors.medium;
+  return (colors[priority] ?? colors.medium) as string;
 };
 
 const getStatusLabel = (status: LeadStatus): string => {

@@ -63,10 +63,10 @@ export function ScrapingQueueItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <h4 className="font-medium text-white truncate">{job.dataSourceName}</h4>
-            <Badge variant={statusConfig.variant} size="sm">
+            <Badge variant={statusConfig?.variant || 'default'} size="sm">
               <span className="flex items-center gap-1">
-                {statusConfig.icon}
-                {statusConfig.label}
+                {statusConfig?.icon}
+                {statusConfig?.label}
               </span>
             </Badge>
           </div>
