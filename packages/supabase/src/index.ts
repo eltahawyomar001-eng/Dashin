@@ -1,2 +1,2 @@
-export { createBrowserClient, createServerClient, getSupabaseBrowserClient } from './client';
+export { createBrowserClient, createServerClient, createMiddlewareClient, getSupabaseBrowserClient } from './client';
 export type { Database } from './database.types';

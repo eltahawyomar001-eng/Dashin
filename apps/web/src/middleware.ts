@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createServerClient } from '@dashin/supabase';
+import { createMiddlewareClient } from '@dashin/supabase';
 
 // Define protected routes by role
 const ROLE_ROUTES = {
@@ -15,14 +15,21 @@ const PUBLIC_ROUTES = ['/auth/login', '/auth/signup', '/auth/forgot-password', '
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Create response to pass to middleware client (for cookie handling)
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
   // Allow public routes
   if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
-    return NextResponse.next();
+    return response;
   }
 
-  // Check authentication
-  const supabase = createServerClient();
+  // Check authentication using middleware client that can read cookies
+  const supabase = createMiddlewareClient(request);
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -52,7 +59,7 @@ export async function middleware(request: NextRequest) {
     console.warn('[Middleware] No user profile found, allowing dashboard access');
     // Allow access to dashboard for new users without profile
     if (pathname === '/' || pathname.startsWith('/dashboard')) {
-      return NextResponse.next();
+      return response;
     }
     // For other protected routes, redirect to dashboard
     return NextResponse.redirect(new URL('/dashboard', request.url));
@@ -74,7 +81,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

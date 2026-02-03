@@ -1,25 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@dashin/auth';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@dashin/ui';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const router = useRouter();
   const { signIn, session, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const redirectingRef = useRef(false);
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (!authLoading && session) {
+    if (!authLoading && session && !redirectingRef.current) {
+      redirectingRef.current = true;
       console.log('[LoginPage] Already authenticated, redirecting to dashboard...');
-      window.location.href = '/dashboard';
+      router.replace('/dashboard');
     }
-  }, [session, authLoading]);
+  }, [session, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +40,8 @@ export default function LoginPage() {
         setLoading(false);
       } else {
         console.log('Login successful, redirecting...');
-        // Force a hard navigation to ensure middleware runs
-        window.location.href = '/dashboard';
+        redirectingRef.current = true;
+        router.replace('/dashboard');
       }
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -46,8 +50,8 @@ export default function LoginPage() {
     }
   };
 
-  // Show loading while checking auth state
-  if (authLoading) {
+  // Show loading while checking auth state or redirecting
+  if (authLoading || redirectingRef.current) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />

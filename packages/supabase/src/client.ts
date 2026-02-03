@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createServerClient as createSSRServerClient } from '@supabase/ssr';
 import type { Database } from './database.types';
 
 // Validate environment variables
@@ -44,6 +45,33 @@ export function createServerClient() {
       persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false,
+    },
+  });
+}
+
+// Create Supabase client for middleware (can read cookies from request)
+export function createMiddlewareClient(request: Request) {
+  const { url, anonKey } = validateEnv();
+  
+  return createSSRServerClient<Database>(url, anonKey, {
+    cookies: {
+      getAll() {
+        // Parse cookies from request header
+        const cookieHeader = request.headers.get('cookie') || '';
+        const cookies: { name: string; value: string }[] = [];
+        
+        cookieHeader.split(';').forEach(cookie => {
+          const [name, ...rest] = cookie.trim().split('=');
+          if (name) {
+            cookies.push({ name, value: rest.join('=') });
+          }
+        });
+        
+        return cookies;
+      },
+      setAll() {
+        // Middleware doesn't set cookies, just reads them
+      },
     },
   });
 }
