@@ -1,87 +1,79 @@
-import { createClient } from '@supabase/supabase-js';
-import { createServerClient as createSSRServerClient } from '@supabase/ssr';
+import { createServerClient as createSSRServerClient, createBrowserClient as createSSRBrowserClient } from '@supabase/ssr';
 import type { Database } from './database.types';
 
-// Validate environment variables
-function validateEnv() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-  console.log('[Supabase] Environment check:', {
-    hasUrl: !!url,
-    hasAnonKey: !!anonKey,
-    urlPrefix: url?.substring(0, 30)
-  });
+type CookieMethods = {
+  getAll: () => { name: string; value: string }[];
+  setAll: (cookies: { name: string; value: string; options?: Record<string, unknown> }[]) => void;
+};
 
-  if (!url || !anonKey) {
-    throw new Error(
-      'Missing Supabase environment variables. Please check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY'
-    );
-  }
-
-  return { url, anonKey };
-}
-
-// Create Supabase client (browser)
+// ============================================================================
+// BROWSER CLIENT - For Client Components
+// ============================================================================
 export function createBrowserClient() {
-  const { url, anonKey } = validateEnv();
-
-  return createClient<Database>(url, anonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      flowType: 'implicit',  // Changed from 'pkce' - simpler flow, fewer network round-trips
-    },
-  });
+  return createSSRBrowserClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
-// Create Supabase client (server - for Server Components and Server Actions)
-export function createServerClient() {
-  const { url, anonKey } = validateEnv();
-
-  return createClient<Database>(url, anonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  });
-}
-
-// Create Supabase client for middleware (can read cookies from request)
-export function createMiddlewareClient(request: Request) {
-  const { url, anonKey } = validateEnv();
-  
-  return createSSRServerClient<Database>(url, anonKey, {
-    cookies: {
-      getAll() {
-        // Parse cookies from request header
-        const cookieHeader = request.headers.get('cookie') || '';
-        const cookies: { name: string; value: string }[] = [];
-        
-        cookieHeader.split(';').forEach(cookie => {
-          const [name, ...rest] = cookie.trim().split('=');
-          if (name) {
-            cookies.push({ name, value: rest.join('=') });
-          }
-        });
-        
-        return cookies;
-      },
-      setAll() {
-        // Middleware doesn't set cookies, just reads them
-      },
-    },
-  });
-}
-
-// Singleton instance for client-side
-let browserClientInstance: ReturnType<typeof createBrowserClient> | null = null;
+// Singleton for browser
+let browserClient: ReturnType<typeof createBrowserClient> | null = null;
 
 export function getSupabaseBrowserClient() {
-  if (!browserClientInstance) {
-    browserClientInstance = createBrowserClient();
+  if (typeof window === 'undefined') {
+    throw new Error('getSupabaseBrowserClient must be called on the client side');
   }
-  return browserClientInstance;
+  if (!browserClient) {
+    browserClient = createBrowserClient();
+  }
+  return browserClient;
+}
+
+// ============================================================================
+// SERVER CLIENT - For Server Components, Server Actions, Route Handlers
+// Pass the result of cookies() from 'next/headers'
+// ============================================================================
+export function createServerClient(cookieStore: { 
+  getAll: () => { name: string; value: string }[];
+  set: (name: string, value: string, options?: Record<string, unknown>) => void;
+}) {
+  return createSSRServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        } catch {
+          // Called from Server Component - cookies are read-only
+        }
+      },
+    },
+  });
+}
+
+// ============================================================================
+// MIDDLEWARE CLIENT - For Next.js Middleware (Edge Runtime)
+// Pass request and response from middleware function
+// ============================================================================
+export function createMiddlewareClient(
+  request: { cookies: { getAll: () => { name: string; value: string }[]; set: (name: string, value: string) => void } },
+  response: { cookies: { set: (name: string, value: string, options?: Record<string, unknown>) => void } }
+) {
+  return createSSRServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          request.cookies.set(name, value);
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
 }

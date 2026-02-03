@@ -1,29 +1,68 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { createMiddlewareClient } from '@dashin/supabase';
+
+// Protected routes that require authentication
+const PROTECTED_ROUTES = ['/dashboard', '/admin', '/campaigns', '/leads', '/analytics', '/reports', '/sources', '/settings'];
+
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = ['/auth/login', '/auth/signup', '/auth/forgot-password', '/auth/reset-password', '/auth/callback'];
 
 export async function middleware(request: NextRequest) {
-  // Create response - pass through all requests
-  // Client-side AuthProvider handles authentication and redirects
-  // Middleware cookie reading isn't reliable in Edge runtime with Supabase
+  const { pathname } = request.nextUrl;
+
+  // Create response first - this is required for cookie handling
   const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
 
+  // Skip middleware for static files and API routes
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.includes('.') // Static files
+  ) {
+    return response;
+  }
+
+  // Create Supabase client for middleware
+  const supabase = createMiddlewareClient(request, response);
+
+  // Refresh session if needed - this is crucial for keeping the session alive
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Check if route is protected
+  const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
+  const isPublicRoute = PUBLIC_ROUTES.some(route => pathname.startsWith(route));
+
+  // Redirect unauthenticated users from protected routes to login
+  if (isProtectedRoute && !user) {
+    const redirectUrl = new URL('/auth/login', request.url);
+    redirectUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Redirect authenticated users from auth pages to dashboard
+  if (isPublicRoute && user && !pathname.includes('/callback')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // Redirect root to dashboard if authenticated, otherwise to login
+  if (pathname === '/') {
+    if (user) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    } else {
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
+  }
+
   return response;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     * - api routes
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

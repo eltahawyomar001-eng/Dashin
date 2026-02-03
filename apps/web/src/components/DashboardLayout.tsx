@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import {
   Sidebar,
   SidebarHeader,
@@ -43,29 +42,11 @@ export interface DashboardLayoutProps {
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const { user, session, loading, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const router = useRouter();
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!loading && !session) {
-      console.log('[DashboardLayout] No session, redirecting to login');
-      router.push('/auth/login');
-    }
-  }, [loading, session, router]);
-
-  // Show loading spinner while checking auth
+  // Show loading spinner while auth is initializing
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-      </div>
-    );
-  }
-
-  // Don't render dashboard if no session
-  if (!session) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>

@@ -1,78 +1,49 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@dashin/auth';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@dashin/ui';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { signIn, session, loading: authLoading } = useAuth();
+  const searchParams = useSearchParams();
+  const { signIn, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const redirectingRef = useRef(false);
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (!authLoading && session && !redirectingRef.current) {
-      redirectingRef.current = true;
-      console.log('[LoginPage] Already authenticated, redirecting to dashboard...');
-      router.replace('/dashboard');
-    }
-  }, [session, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    try {
-      console.log('Starting login...', { email });
-      const { error: signInError } = await signIn(email, password);
+    const { error: signInError } = await signIn(email, password);
 
-      if (signInError) {
-        console.error('Login error:', signInError);
-        setError(signInError.message || 'Failed to sign in');
-        setLoading(false);
-      } else {
-        console.log('Login successful, redirecting...');
-        redirectingRef.current = true;
-        router.replace('/dashboard');
-      }
-    } catch (err) {
-      console.error('Unexpected error:', err);
-      setError('An unexpected error occurred');
+    if (signInError) {
+      setError(signInError.message || 'Failed to sign in');
       setLoading(false);
+    } else {
+      // Redirect to the original destination or dashboard
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      router.push(redirect);
     }
   };
 
-  // Show loading while checking auth state or redirecting
-  if (authLoading || redirectingRef.current) {
+  // Show loading while auth is initializing
+  if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
       </div>
     );
   }
 
-  // Don't render login form if already authenticated (redirect is happening)
-  if (session) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 mx-auto animate-spin rounded-full border-2 border-primary-500 border-t-transparent mb-4" />
-          <p className="text-slate-400">Redirecting to dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-slate-900 p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-gradient mb-2 text-4xl font-bold">Dashin Research</h1>
@@ -98,9 +69,8 @@ export default function LoginPage() {
                 placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                leftIcon={<Mail className="h-4 w-4" />}
+                icon={<Mail className="h-4 w-4" />}
                 required
-                autoComplete="email"
               />
 
               <Input
@@ -109,31 +79,27 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                leftIcon={<Lock className="h-4 w-4" />}
+                icon={<Lock className="h-4 w-4" />}
                 required
-                autoComplete="current-password"
               />
 
-              <div className="flex items-center justify-between text-sm">
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-primary-400 hover:text-primary-300 transition-colors"
-                >
+              <div className="flex justify-end">
+                <Link href="/auth/forgot-password" className="text-sm text-primary-400 hover:text-primary-300">
                   Forgot password?
                 </Link>
               </div>
 
-              <Button type="submit" variant="primary" className="w-full" isLoading={loading}>
+              <Button type="submit" className="w-full" loading={loading} disabled={loading}>
                 Sign In
               </Button>
-
-              <div className="text-center text-sm text-slate-400">
-                Don&apos;t have an account?{' '}
-                <Link href="/auth/signup" className="text-primary-400 hover:text-primary-300 transition-colors font-medium">
-                  Sign up for free
-                </Link>
-              </div>
             </form>
+
+            <div className="mt-6 text-center text-sm text-slate-400">
+              Don&apos;t have an account?{' '}
+              <Link href="/auth/signup" className="text-primary-400 hover:text-primary-300">
+                Sign up
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
