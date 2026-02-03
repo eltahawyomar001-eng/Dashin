@@ -127,12 +127,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       console.log('[AuthProvider] Starting signInWithPassword...');
-      const { data, error } = await supabase.auth.signInWithPassword({
+      
+      // Add timeout protection
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+      });
+      
+      const authPromise = supabase.auth.signInWithPassword({
         email,
         password,
       });
+      
+      const { data, error } = await Promise.race([authPromise, timeoutPromise]);
 
-      console.log('[AuthProvider] signInWithPassword response:', { data, error });
+      console.log('[AuthProvider] signInWithPassword response:', { 
+        hasData: !!data, 
+        hasSession: !!data?.session,
+        hasUser: !!data?.user,
+        error: error?.message 
+      });
 
       if (error) {
         console.error('[AuthProvider] Sign in error:', error);
