@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@dashin/ui';
+import { LogoIcon } from '../components/Logo';
 import {
   ArrowRight,
   BarChart3,
@@ -10,7 +11,6 @@ import {
   Shield,
   TrendingUp,
   CheckCircle2,
-  Sparkles,
   Brain,
   Search,
   Database,
@@ -93,7 +93,7 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-                <Sparkles className="w-5 h-5 text-white" />
+                <LogoIcon className="text-white" size={24} />
               </div>
               <span className="text-xl font-bold text-white">Dashin</span>
             </div>
@@ -362,7 +362,7 @@ export default function HomePage() {
                 <Link href="/auth/signup">
                   <Button
                     size="lg"
-                    className="rounded-xl bg-white text-purple-600 hover:bg-white/90 text-lg px-8 border-0 shadow-xl"
+                    className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8 border-0 shadow-xl shadow-blue-500/25"
                   >
                     Start Free Trial
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -404,7 +404,7 @@ export default function HomePage() {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-                  <Sparkles className="w-5 h-5 text-white" />
+                  <LogoIcon className="text-white" size={24} />
                 </div>
                 <span className="text-xl font-bold text-white">Dashin</span>
               </div>
