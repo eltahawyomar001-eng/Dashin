@@ -30,8 +30,9 @@ export async function middleware(request: NextRequest) {
   // Create Supabase client for middleware
   const supabase = createMiddlewareClient(request, response);
 
-  // Refresh session if needed - this is crucial for keeping the session alive
-  const { data: { user } } = await supabase.auth.getUser();
+  // Get session - this validates the session and refreshes if needed
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
   // Check if route is protected
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
