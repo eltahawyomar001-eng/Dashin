@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0E7FF;stop-opacity:1" />
+    </linearGradient>
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle with gradient -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)"/>
+  
+  <!-- Main icon group with shadow -->
+  <g filter="url(#shadow)">
+    <!-- Magnifying glass handle -->
+    <path d="M340 340 L420 420" stroke="url(#iconGradient)" stroke-width="32" stroke-linecap="round"/>
+    
+    <!-- Magnifying glass circle -->
+    <circle cx="220" cy="220" r="120" fill="none" stroke="url(#iconGradient)" stroke-width="28"/>
+    
+    <!-- Data/lead icons inside magnifying glass -->
+    <g transform="translate(220, 220)">
+      <!-- Top lead dot -->
+      <circle cx="-35" cy="-50" r="12" fill="#FCD34D"/>
+      <!-- Middle lead dot -->
+      <circle cx="15" cy="-25" r="12" fill="#60A5FA"/>
+      <!-- Bottom lead dot -->
+      <circle cx="-20" cy="15" r="12" fill="#34D399"/>
+      <!-- Right lead dot -->
+      <circle cx="40" cy="30" r="12" fill="#F472B6"/>
+      
+      <!-- Connection lines (subtle) -->
+      <line x1="-35" y1="-50" x2="15" y2="-25" stroke="#E0E7FF" stroke-width="3" opacity="0.4"/>
+      <line x1="15" y1="-25" x2="-20" y2="15" stroke="#E0E7FF" stroke-width="3" opacity="0.4"/>
+      <line x1="15" y1="-25" x2="40" y2="30" stroke="#E0E7FF" stroke-width="3" opacity="0.4"/>
+    </g>
+  </g>
+  
+  <!-- Accent shine effect -->
+  <path d="M 180 100 Q 200 120, 180 140" stroke="#FFFFFF" stroke-width="6" opacity="0.3" stroke-linecap="round" fill="none"/>
+</svg>
