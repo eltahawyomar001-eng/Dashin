@@ -27,14 +27,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const supabase = getSupabaseBrowserClient();
 
-  // Fetch user profile data
+  // Fetch user profile data with timeout
   const fetchUserProfile = async (userId: string): Promise<User | null> => {
     try {
-      const { data, error } = await supabase
+      console.log('[AuthProvider] Fetching user profile for:', userId);
+      
+      // Add timeout to prevent infinite hang
+      const timeoutPromise = new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      );
+      
+      const fetchPromise = supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single();
+      
+      const result = await Promise.race([fetchPromise, timeoutPromise]);
+      
+      // If timeout won, result will be rejection handled in catch
+      const { data, error } = result as Awaited<typeof fetchPromise>;
 
       if (error) {
         console.error('[AuthProvider] Error fetching user profile:', error);
@@ -72,9 +84,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
 
+      console.log('[AuthProvider] Profile fetched successfully');
       return data as User;
-    } catch (error) {
-      console.error('[AuthProvider] Error fetching user profile:', error);
+    } catch (error: any) {
+      console.warn('[AuthProvider] Profile fetch failed or timed out:', error?.message);
       return null;
     }
   };
@@ -83,6 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        console.log('[AuthProvider] Initializing auth...');
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         // If there's an error getting the session (like token revoked), clear it
@@ -96,12 +110,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
         
+        console.log('[AuthProvider] Session check complete:', { hasSession: !!currentSession });
+        
         setSession(currentSession);
         setSupabaseUser(currentSession?.user ?? null);
+        
+        // IMPORTANT: Set loading to false IMMEDIATELY after session is set
+        // This allows pages to redirect based on session without waiting for profile
+        setLoading(false);
 
+        // Fetch profile in background (non-blocking)
         if (currentSession?.user) {
-          const profile = await fetchUserProfile(currentSession.user.id);
-          setUser(profile);
+          console.log('[AuthProvider] Fetching profile in background...');
+          fetchUserProfile(currentSession.user.id).then(profile => {
+            console.log('[AuthProvider] Profile loaded:', !!profile);
+            setUser(profile);
+          });
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -110,7 +134,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(null);
         setSupabaseUser(null);
         setUser(null);
-      } finally {
         setLoading(false);
       }
     };
@@ -120,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        console.log('[AuthProvider] Auth state changed:', event);
+        console.log('[AuthProvider] Auth state changed:', event, { hasSession: !!newSession });
         
         // Handle token revocation - clear everything and redirect to login
         if (event === 'TOKEN_REFRESHED' && !newSession) {
@@ -134,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Handle sign out
         if (event === 'SIGNED_OUT') {
+          console.log('[AuthProvider] User signed out');
           setSession(null);
           setSupabaseUser(null);
           setUser(null);
@@ -141,17 +165,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
         
+        // Set session immediately so components can redirect
         setSession(newSession);
         setSupabaseUser(newSession?.user ?? null);
+        
+        // IMPORTANT: Set loading to false BEFORE fetching profile
+        // This allows the login page to redirect to dashboard immediately
+        setLoading(false);
 
+        // Fetch profile in background (non-blocking)
         if (newSession?.user) {
-          const profile = await fetchUserProfile(newSession.user.id);
-          setUser(profile);
+          console.log('[AuthProvider] Fetching profile in background...');
+          fetchUserProfile(newSession.user.id).then(profile => {
+            console.log('[AuthProvider] Profile fetch complete:', !!profile);
+            setUser(profile);
+          });
         } else {
           setUser(null);
         }
-
-        setLoading(false);
       }
     );
 
