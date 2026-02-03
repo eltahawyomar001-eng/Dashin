@@ -1,20 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@dashin/auth';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@dashin/ui';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, loading: authLoading } = useAuth();
+  const { signIn, loading: authLoading, session } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // If user is already authenticated, redirect to dashboard
+  useEffect(() => {
+    if (session) {
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      // Use window.location for hard navigation to ensure cookies are sent
+      window.location.href = redirect;
+    }
+  }, [session, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,11 +34,8 @@ export default function LoginPage() {
     if (signInError) {
       setError(signInError.message || 'Failed to sign in');
       setLoading(false);
-    } else {
-      // Redirect to the original destination or dashboard
-      const redirect = searchParams.get('redirect') || '/dashboard';
-      router.push(redirect as '/dashboard');
     }
+    // Don't manually redirect - the useEffect above will handle it when session updates
   };
 
   // Show loading while auth is initializing

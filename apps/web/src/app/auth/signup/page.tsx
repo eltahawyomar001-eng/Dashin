@@ -1,14 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@dashin/ui';
 import { createBrowserClient } from '@dashin/supabase';
 import { Mail, Lock, User, Building2, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function SignUpPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -55,9 +53,9 @@ export default function SignUpPage() {
 
       if (data.user) {
         setSuccess(true);
-        // Redirect to dashboard after 2 seconds
+        // Use hard navigation to ensure cookies are sent properly
         setTimeout(() => {
-          router.push('/dashboard');
+          window.location.href = '/dashboard';
         }, 2000);
       }
     } catch (err) {
