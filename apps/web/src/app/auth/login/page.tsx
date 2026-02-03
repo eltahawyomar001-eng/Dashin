@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@dashin/auth';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@dashin/ui';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
@@ -9,22 +9,11 @@ import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
-  const { signIn, loading: authLoading, session } = useAuth();
+  const { signIn, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
-
-  // If user is already authenticated, redirect to dashboard
-  useEffect(() => {
-    if (session && !redirecting) {
-      setRedirecting(true);
-      const redirect = searchParams.get('redirect') || '/dashboard';
-      // Use window.location for hard navigation to ensure cookies are sent
-      window.location.href = redirect;
-    }
-  }, [session, searchParams, redirecting]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,12 +25,15 @@ export default function LoginPage() {
     if (signInError) {
       setError(signInError.message || 'Failed to sign in');
       setLoading(false);
+    } else {
+      // On successful sign in, do a hard refresh to let middleware handle routing
+      const redirect = searchParams.get('redirect') || '/dashboard';
+      window.location.href = redirect;
     }
-    // Don't manually redirect - the useEffect above will handle it when session updates
   };
 
-  // Show loading while auth is initializing or redirecting
-  if (authLoading || redirecting) {
+  // Show loading while auth is initializing
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-900">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />

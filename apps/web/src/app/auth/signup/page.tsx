@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@dashin/ui';
 import { createBrowserClient } from '@dashin/supabase';
@@ -8,11 +8,10 @@ import { useAuth } from '@dashin/auth';
 import { Mail, Lock, User, Building2, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function SignUpPage() {
-  const { session, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -22,16 +21,8 @@ export default function SignUpPage() {
     companyName: '',
   });
 
-  // If user is already authenticated, redirect to dashboard
-  useEffect(() => {
-    if (session && !redirecting) {
-      setRedirecting(true);
-      window.location.href = '/dashboard';
-    }
-  }, [session, redirecting]);
-
-  // Show loading while auth is initializing or redirecting
-  if (authLoading || redirecting) {
+  // Show loading while auth is initializing
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-900">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
