@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Get user profile with role
-  const { data: userData } = await supabase
+  const { data: userData, error: userError } = await supabase
     .from('users')
     .select('role, agency_id')
     .eq('id', session.user.id)
@@ -46,8 +46,16 @@ export async function middleware(request: NextRequest) {
   
   const user = userData as UserData | null;
   
-  if (!user) {
-    return NextResponse.redirect(new URL('/auth/login', request.url));
+  // If no profile exists yet, allow access to dashboard with default permissions
+  // The profile will be created by the auth trigger or AuthProvider
+  if (!user || userError) {
+    console.warn('[Middleware] No user profile found, allowing dashboard access');
+    // Allow access to dashboard for new users without profile
+    if (pathname === '/' || pathname.startsWith('/dashboard')) {
+      return NextResponse.next();
+    }
+    // For other protected routes, redirect to dashboard
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   // Root path - redirect to dashboard
