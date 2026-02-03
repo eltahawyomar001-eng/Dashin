@@ -1,8 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm --filter=@dashin/web build",
-  "installCommand": "pnpm install",
-  "outputDirectory": "apps/web/.next",
   "framework": "nextjs",
   "headers": [
     {
@@ -21,6 +18,5 @@
       "destination": "https://gehbpdghdkflhuapdkip.supabase.co/functions/v1/:path*"
     }
   ],
-  "regions": ["iad1"],
-  "crons": []
+  "regions": ["iad1"]
 }
