@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@dashin/auth';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@dashin/ui';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
@@ -14,17 +14,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const redirectingRef = useRef(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   // If user is already authenticated, redirect to dashboard
   useEffect(() => {
-    if (session && !redirectingRef.current) {
-      redirectingRef.current = true;
+    if (session && !redirecting) {
+      setRedirecting(true);
       const redirect = searchParams.get('redirect') || '/dashboard';
       // Use window.location for hard navigation to ensure cookies are sent
       window.location.href = redirect;
     }
-  }, [session, searchParams]);
+  }, [session, searchParams, redirecting]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +41,7 @@ export default function LoginPage() {
   };
 
   // Show loading while auth is initializing or redirecting
-  if (authLoading || redirectingRef.current) {
+  if (authLoading || redirecting) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-900">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />

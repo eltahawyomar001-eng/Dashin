@@ -59,15 +59,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize auth state
   useEffect(() => {
-    if (!supabase) return;
+    // If no supabase client (SSR or not mounted), set loading to false
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
 
-    let mounted = true;
+    let isMounted = true;
 
     const initializeAuth = async () => {
       try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        if (!mounted) return;
+        if (!isMounted) return;
         
         setSession(currentSession);
         setSupabaseUser(currentSession?.user ?? null);
@@ -76,10 +80,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fetch profile in background
         if (currentSession?.user) {
           const profile = await fetchUserProfile(currentSession.user.id);
-          if (mounted) setUser(profile);
+          if (isMounted) setUser(profile);
         }
       } catch {
-        if (mounted) {
+        if (isMounted) {
           setSession(null);
           setSupabaseUser(null);
           setUser(null);
@@ -93,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
-        if (!mounted) return;
+        if (!isMounted) return;
         
         setSession(newSession);
         setSupabaseUser(newSession?.user ?? null);
@@ -101,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (newSession?.user) {
           const profile = await fetchUserProfile(newSession.user.id);
-          if (mounted) setUser(profile);
+          if (isMounted) setUser(profile);
         } else {
           setUser(null);
         }
@@ -109,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => {
-      mounted = false;
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [supabase, fetchUserProfile]);
