@@ -32,7 +32,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Fetch user profile from database
-  const fetchUserProfile = useCallback(async (userId: string): Promise<User | null> => {
+  // Note: Profile creation is handled by database trigger (handle_new_user) on auth.users insert
+  const fetchUserProfile = useCallback(async (userId: string, retries = 3): Promise<User | null> => {
     if (!supabase) return null;
     try {
       const { data, error } = await supabase
@@ -42,22 +43,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        // If profile doesn't exist, create it
-        if (error.code === 'PGRST116') {
-          const { data: { user: authUser } } = await supabase.auth.getUser();
-          if (authUser) {
-            const { data: newProfile } = await supabase
-              .from('users')
-              .insert({
-                id: authUser.id,
-                email: authUser.email!,
-                role: 'client' as UserRole,
-              } as any)
-              .select()
-              .single();
-            return newProfile ? (newProfile as unknown as User) : null;
-          }
+        // Profile might not exist yet if trigger hasn't run - wait and retry
+        if (error.code === 'PGRST116' && retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          return fetchUserProfile(userId, retries - 1);
         }
+        console.warn('Failed to fetch user profile:', error.message);
         return null;
       }
       return data as User;
@@ -135,22 +126,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Note: Profile creation is handled by database trigger (handle_new_user) on auth.users insert
+  // We just need to call auth.signUp and the trigger will create the profile
   const signUp = async (email: string, password: string, role: UserRole, agencyId?: string) => {
     if (!supabase) {
       return { error: new Error('Auth not initialized') };
     }
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
-      if (authError || !authData.user) return { error: authError as Error };
-
-      const { error: profileError } = await supabase.from('users').insert({
-        id: authData.user.id,
-        email,
-        role,
-        agency_id: agencyId ?? null,
-      } as any);
-
-      if (profileError) return { error: profileError as Error };
+      const { error: authError } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            role,
+            agency_id: agencyId ?? null,
+          }
+        }
+      });
+      if (authError) return { error: authError as Error };
       return { error: null };
     } catch (error) {
       return { error: error as Error };

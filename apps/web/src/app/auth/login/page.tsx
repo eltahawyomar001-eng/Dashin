@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@dashin/auth';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@dashin/ui';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
@@ -14,10 +14,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const redirectingRef = useRef(false);
 
   // If user is already authenticated, redirect to dashboard
   useEffect(() => {
-    if (session) {
+    if (session && !redirectingRef.current) {
+      redirectingRef.current = true;
       const redirect = searchParams.get('redirect') || '/dashboard';
       // Use window.location for hard navigation to ensure cookies are sent
       window.location.href = redirect;
@@ -38,8 +40,8 @@ export default function LoginPage() {
     // Don't manually redirect - the useEffect above will handle it when session updates
   };
 
-  // Show loading while auth is initializing
-  if (authLoading) {
+  // Show loading while auth is initializing or redirecting
+  if (authLoading || redirectingRef.current) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-900">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
