@@ -11,7 +11,7 @@ const ROLE_ROUTES = {
 };
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ['/auth/login', '/auth/forgot-password', '/auth/reset-password'];
+const PUBLIC_ROUTES = ['/auth/login', '/auth/signup', '/auth/forgot-password', '/auth/reset-password'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
