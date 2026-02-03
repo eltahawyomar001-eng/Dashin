@@ -30,7 +30,7 @@ export function createBrowserClient() {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: 'pkce',
+      flowType: 'implicit',  // Changed from 'pkce' - simpler flow, fewer network round-trips
     },
   });
 }
