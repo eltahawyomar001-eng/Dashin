@@ -30,12 +30,25 @@ export async function middleware(request: NextRequest) {
 
   // Check authentication using middleware client that can read cookies
   const supabase = createMiddlewareClient(request);
+  
+  // Debug: Log all cookies to see what we're receiving
+  const cookieHeader = request.headers.get('cookie') || '';
+  console.log('[Middleware] Cookies received:', cookieHeader.substring(0, 200));
+  
   const {
     data: { session },
+    error: sessionError,
   } = await supabase.auth.getSession();
+
+  console.log('[Middleware] Session check:', { 
+    hasSession: !!session, 
+    userId: session?.user?.id,
+    error: sessionError?.message 
+  });
 
   // Redirect to login if not authenticated
   if (!session) {
+    console.log('[Middleware] No session, redirecting to login');
     const redirectUrl = new URL('/auth/login', request.url);
     redirectUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(redirectUrl);
