@@ -8,6 +8,17 @@ CREATE TYPE lead_status AS ENUM ('new', 'contacted', 'qualified', 'converted', '
 CREATE TYPE lead_priority AS ENUM ('low', 'medium', 'high', 'urgent');
 CREATE TYPE scraping_job_status AS ENUM ('pending', 'running', 'completed', 'failed', 'cancelled');
 
+-- Agencies table (must be created BEFORE users table since users references it)
+CREATE TABLE IF NOT EXISTS agencies (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name TEXT NOT NULL,
+  domain TEXT UNIQUE,
+  settings JSONB DEFAULT '{}',
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Users table (extends Supabase auth.users)
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -19,17 +30,6 @@ CREATE TABLE IF NOT EXISTS users (
   avatar_url TEXT,
   is_active BOOLEAN DEFAULT true,
   last_login_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Agencies table
-CREATE TABLE IF NOT EXISTS agencies (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  name TEXT NOT NULL,
-  domain TEXT UNIQUE,
-  settings JSONB DEFAULT '{}',
-  is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -215,33 +215,26 @@ ALTER TABLE scraping_jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lead_activities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE campaign_analytics ENABLE ROW LEVEL SECURITY;
 
--- Users can read their own data
+-- Users can read their own data (simple auth check, no recursive query)
 CREATE POLICY "Users can view own data" ON users
-  FOR SELECT USING (auth.uid() = id);
-
--- Users can update their own data
-CREATE POLICY "Users can update own data" ON users
-  FOR UPDATE USING (auth.uid() = id);
-
--- Super admins can do everything
-CREATE POLICY "Super admins have full access to users" ON users
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid() AND role = 'super_admin'
-    )
-  );
-
--- Agency admins can view users in their agency
-CREATE POLICY "Agency admins can view agency users" ON users
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE id = auth.uid() 
-        AND role = 'agency_admin'
-        AND agency_id = users.agency_id
-    )
+    auth.uid() = id
   );
+
+-- Users can update their own data  
+CREATE POLICY "Users can update own data" ON users
+  FOR UPDATE USING (
+    auth.uid() = id
+  );
+
+-- Allow users to INSERT their own profile (for handle_new_user trigger)
+CREATE POLICY "Users can insert own data" ON users
+  FOR INSERT WITH CHECK (
+    auth.uid() = id
+  );
+
+-- Note: Super admin and agency admin policies removed to prevent infinite recursion
+-- These should be implemented with service role or separate admin tables if needed
 
 -- Campaigns: Users can view campaigns in their agency
 CREATE POLICY "Users can view agency campaigns" ON campaigns

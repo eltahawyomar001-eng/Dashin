@@ -1,14 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@dashin/auth';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@dashin/ui';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const router = useRouter();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,13 +18,23 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    const { error: signInError } = await signIn(email, password);
+    try {
+      console.log('Starting login...', { email });
+      const { error: signInError } = await signIn(email, password);
 
-    if (signInError) {
-      setError(signInError.message || 'Failed to sign in');
+      if (signInError) {
+        console.error('Login error:', signInError);
+        setError(signInError.message || 'Failed to sign in');
+        setLoading(false);
+      } else {
+        console.log('Login successful, redirecting...');
+        // Force a hard navigation to ensure middleware runs
+        window.location.href = '/dashboard';
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError('An unexpected error occurred');
       setLoading(false);
-    } else {
-      router.push('/dashboard');
     }
   };
 
