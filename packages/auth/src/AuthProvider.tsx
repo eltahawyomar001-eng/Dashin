@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { getSupabaseBrowserClient } from '@dashin/supabase';
 import type { User, UserRole } from '@dashin/shared-types';
@@ -25,10 +25,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const supabase = getSupabaseBrowserClient();
+  // Only create client on the browser
+  const supabase = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    return getSupabaseBrowserClient();
+  }, []);
 
   // Fetch user profile from database
   const fetchUserProfile = useCallback(async (userId: string): Promise<User | null> => {
+    if (!supabase) return null;
     try {
       const { data, error } = await supabase
         .from('users')
@@ -63,6 +68,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize auth state
   useEffect(() => {
+    if (!supabase) return;
+
     let mounted = true;
 
     const initializeAuth = async () => {
@@ -117,6 +124,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase, fetchUserProfile]);
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) {
+      return { error: new Error('Auth not initialized') };
+    }
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       return { error: error as Error | null };
@@ -126,6 +136,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, role: UserRole, agencyId?: string) => {
+    if (!supabase) {
+      return { error: new Error('Auth not initialized') };
+    }
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
       if (authError || !authData.user) return { error: authError as Error };
@@ -145,6 +158,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    if (!supabase) {
+      return { error: new Error('Auth not initialized') };
+    }
     try {
       const { error } = await supabase.auth.signOut();
       return { error: error as Error | null };
@@ -154,6 +170,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetPassword = async (email: string) => {
+    if (!supabase) {
+      return { error: new Error('Auth not initialized') };
+    }
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
@@ -165,6 +184,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updatePassword = async (newPassword: string) => {
+    if (!supabase) {
+      return { error: new Error('Auth not initialized') };
+    }
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       return { error: error as Error | null };

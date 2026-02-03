@@ -29,7 +29,7 @@ import type {
  * for campaigns, leads, and scraping activities.
  */
 
-// Simple Stat Card Component
+// Simple Stat Card Component - Now with dark glassmorphism
 interface SimpleStatCardProps {
   label: string;
   value: string | number;
@@ -40,22 +40,22 @@ interface SimpleStatCardProps {
 
 function SimpleStatCard({ label, value, change, icon, color }: SimpleStatCardProps) {
   const colorClasses = {
-    purple: 'bg-purple-100 text-purple-600',
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-green-100 text-green-600',
-    yellow: 'bg-yellow-100 text-yellow-600',
+    purple: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    blue: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    green: 'bg-green-500/20 text-green-400 border-green-500/30',
+    yellow: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
   };
 
-  const changeColor = change >= 0 ? 'text-green-600' : 'text-red-600';
+  const changeColor = change >= 0 ? 'text-green-400' : 'text-red-400';
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-5">
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${colorClasses[color]}`}>
+    <div className="glass rounded-2xl p-6">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${colorClasses[color]}`}>
         {icon}
       </div>
-      <div className="text-sm text-gray-600 mb-1">{label}</div>
+      <div className="text-sm text-slate-400 mb-1">{label}</div>
       <div className="flex items-end justify-between">
-        <span className="text-2xl font-bold text-gray-900">
+        <span className="text-2xl font-bold text-white">
           {typeof value === 'number' ? value.toLocaleString() : value}
         </span>
         <span className={`text-sm font-medium ${changeColor}`}>
@@ -158,23 +158,23 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
 
   return (
-    <div className="space-y-6">
+    <div className="p-8 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-white mb-2">Analytics</h1>
+          <p className="text-slate-400">
             Comprehensive insights across campaigns, leads, and scraping activities
           </p>
         </div>
 
         {/* Time Range Selector */}
         <div className="flex items-center gap-2">
-          <Calendar size={20} className="text-gray-500" />
+          <Calendar size={20} className="text-slate-400" />
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-            className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="px-4 py-2 glass rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
           >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
@@ -218,11 +218,11 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Lead Trends */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6">
+      <div className="glass rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Lead Trends</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl font-semibold text-white">Lead Trends</h2>
+            <p className="text-sm text-slate-400 mt-1">
               Total leads and qualifications over time
             </p>
           </div>
@@ -238,10 +238,10 @@ export default function AnalyticsPage() {
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Lead Sources */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6">
+        <div className="glass rounded-2xl p-6">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Lead Sources</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl font-semibold text-white">Lead Sources</h2>
+            <p className="text-sm text-slate-400 mt-1">
               Distribution of leads by source
             </p>
           </div>
@@ -253,10 +253,10 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Priority Distribution */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6">
+        <div className="glass rounded-2xl p-6">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Priority Distribution</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl font-semibold text-white">Priority Distribution</h2>
+            <p className="text-sm text-slate-400 mt-1">
               Leads grouped by priority level
             </p>
           </div>
@@ -269,11 +269,11 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Campaign Performance */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6">
+      <div className="glass rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Campaign Performance</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl font-semibold text-white">Campaign Performance</h2>
+            <p className="text-sm text-slate-400 mt-1">
               Lead acquisition by campaign over time
             </p>
           </div>
@@ -288,13 +288,13 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Qualification Score Distribution */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6">
+      <div className="glass rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-white">
               Qualification Score Distribution
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-slate-400 mt-1">
               Number of leads by qualification score (1-5)
             </p>
           </div>
@@ -309,47 +309,47 @@ export default function AnalyticsPage() {
 
       {/* Quick Insights */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <TrendingUp size={24} />
+            <div className="p-2 bg-white/10 rounded-xl">
+              <TrendingUp size={24} className="text-purple-400" />
             </div>
             <div>
-              <div className="text-sm opacity-90">Top Performer</div>
-              <div className="text-xl font-bold">Enterprise SaaS</div>
+              <div className="text-sm text-slate-400">Top Performer</div>
+              <div className="text-xl font-bold text-white">Enterprise SaaS</div>
             </div>
           </div>
-          <div className="text-sm opacity-90">
+          <div className="text-sm text-slate-400">
             512 qualified leads with 56.9% qualification rate
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-500/30 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <CheckCircle2 size={24} />
+            <div className="p-2 bg-white/10 rounded-xl">
+              <CheckCircle2 size={24} className="text-green-400" />
             </div>
             <div>
-              <div className="text-sm opacity-90">Best Conversion</div>
-              <div className="text-xl font-bold">Q1 Tech Startups</div>
+              <div className="text-sm text-slate-400">Best Conversion</div>
+              <div className="text-xl font-bold text-white">Q1 Tech Startups</div>
             </div>
           </div>
-          <div className="text-sm opacity-90">
+          <div className="text-sm text-slate-400">
             62.3% of qualified leads converted to opportunities
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-sm border border-blue-500/30 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <BarChart3 size={24} />
+            <div className="p-2 bg-white/10 rounded-xl">
+              <BarChart3 size={24} className="text-blue-400" />
             </div>
             <div>
-              <div className="text-sm opacity-90">Average Score</div>
-              <div className="text-xl font-bold">3.8 / 5.0</div>
+              <div className="text-sm text-slate-400">Average Score</div>
+              <div className="text-xl font-bold text-white">3.8 / 5.0</div>
             </div>
           </div>
-          <div className="text-sm opacity-90">
+          <div className="text-sm text-slate-400">
             Overall lead quality improved by 12% this period
           </div>
         </div>

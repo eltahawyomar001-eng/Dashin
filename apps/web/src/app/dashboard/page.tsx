@@ -1,27 +1,11 @@
 'use client';
 
 import { useUser } from '@dashin/auth';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  PageHeader,
-  Container,
-  Badge,
-  StatCard,
-  MetricsGrid,
-  ActivitySection,
-  ChartContainer,
-  ChartTimeRangeSelector,
-} from '@dashin/ui';
-import { Building2, Shield, Users, TrendingUp, UserPlus, Database, Target } from 'lucide-react';
-import { DashboardLayout } from '../../components/DashboardLayout';
-import { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardContent, Badge } from '@dashin/ui';
+import { Building2, Shield, Users, TrendingUp, UserPlus, Database, Target, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 export default function DashboardPage() {
   const user = useUser();
-  const [timeRange, setTimeRange] = useState('30d');
 
   const getRoleIcon = () => {
     switch (user?.role) {
@@ -29,209 +13,248 @@ export default function DashboardPage() {
         return <Shield className="h-5 w-5 text-accent-400" />;
       case 'agency_admin':
         return <Building2 className="h-5 w-5 text-primary-400" />;
-      case 'researcher':
-      case 'client':
-        return <Users className="h-5 w-5 text-blue-400" />;
       default:
-        return <Users className="h-5 w-5" />;
+        return <Users className="h-5 w-5 text-blue-400" />;
     }
   };
 
   const getRoleLabel = () => {
-    switch (user?.role) {
-      case 'super_admin':
-        return 'Super Admin';
-      case 'agency_admin':
-        return 'Agency Admin';
-      case 'researcher':
-        return 'Researcher';
-      case 'client':
-        return 'Client';
-      default:
-        return 'Unknown';
-    }
+    const labels: Record<string, string> = {
+      super_admin: 'Super Admin',
+      agency_admin: 'Agency Admin',
+      researcher: 'Researcher',
+      client: 'Client',
+    };
+    return labels[user?.role || ''] || 'User';
   };
 
-  // Mock activity data
-  const recentActivity = [
-    {
-      id: '1',
-      type: 'user' as const,
-      title: 'New user registered',
-      description: 'researcher@agency.com joined the platform',
-      timestamp: new Date(Date.now() - 1000 * 60 * 15),
-      user: { name: 'System' },
-    },
-    {
-      id: '2',
-      type: 'campaign' as const,
-      title: 'Campaign created',
-      description: 'Q1 2026 Lead Generation campaign started',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      user: { name: user?.email || 'User' },
-    },
-    {
-      id: '3',
-      type: 'lead' as const,
-      title: '50 new leads added',
-      description: 'Leads imported from scraping session',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
-      user: { name: 'Scraper Bot' },
-    },
-  ];
-
+  // Show loading state
   if (!user) {
     return (
-      <DashboardLayout>
-        <Container>
-          <div className="flex min-h-[50vh] items-center justify-center">
-            <div className="glass rounded-2xl p-8">
-              <p className="text-slate-400">Loading...</p>
-            </div>
-          </div>
-        </Container>
-      </DashboardLayout>
+      <div className="p-8">
+        <div className="glass rounded-2xl p-8 flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <Container>
-        <PageHeader
-          title="Dashboard"
-          description={`Welcome back, ${user.email}`}
-          actions={
-            <Badge variant="success">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                Online
-              </span>
-            </Badge>
-          }
-        />
-
-        {/* Key Metrics */}
-        <MetricsGrid columns={4} className="mb-8">
-          <StatCard
-            title="Total Leads"
-            value="2,847"
-            trend={{ value: 12.5, isPositive: true, label: 'vs last month' }}
-            icon={<Target className="h-6 w-6 text-primary-400" />}
-            variant="primary"
-          />
-          <StatCard
-            title="Active Campaigns"
-            value="12"
-            trend={{ value: 3, isPositive: true, label: 'new this week' }}
-            icon={<TrendingUp className="h-6 w-6 text-green-400" />}
-            variant="success"
-          />
-          <StatCard
-            title="Team Members"
-            value="8"
-            trend={{ value: 0, isPositive: false, label: 'no change' }}
-            icon={<UserPlus className="h-6 w-6 text-blue-400" />}
-          />
-          <StatCard
-            title="Data Sources"
-            value="5"
-            subtitle="2 pending approval"
-            icon={<Database className="h-6 w-6 text-amber-400" />}
-            variant="warning"
-          />
-        </MetricsGrid>
-
-        {/* Charts Section */}
-        <div className="grid gap-6 lg:grid-cols-2 mb-8">
-          <ChartContainer
-            title="Lead Growth"
-            description="Total leads acquired over time"
-            actions={
-              <ChartTimeRangeSelector value={timeRange} onChange={setTimeRange} />
-            }
-            height={300}
-          >
-            <div className="flex items-center justify-center h-full text-slate-400">
-              <div className="text-center">
-                <Database className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Chart visualization will be added in future segment</p>
-                <p className="text-sm mt-2">Selected: {timeRange}</p>
-              </div>
-            </div>
-          </ChartContainer>
-
-          <ChartContainer
-            title="Campaign Performance"
-            description="Active campaigns by status"
-            height={300}
-          >
-            <div className="flex items-center justify-center h-full text-slate-400">
-              <div className="text-center">
-                <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Chart visualization will be added in future segment</p>
-              </div>
-            </div>
-          </ChartContainer>
-        </div>
-
-        {/* Activity Feed */}
-        <div className="grid gap-6 lg:grid-cols-3 mb-8">
-          <div className="lg:col-span-2">
-            <ActivitySection
-              title="Recent Activity"
-              items={recentActivity}
-              maxItems={5}
-            />
-          </div>
-
-          {/* User Profile Card */}
-          <div>
-            <Card variant="glass-strong">
-              <CardHeader>
-                <CardTitle>Your Profile</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="glass-strong flex h-16 w-16 items-center justify-center rounded-full">
-                    {getRoleIcon()}
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold text-white truncate">{user.email}</p>
-                    <p className="text-sm text-slate-400">{getRoleLabel()}</p>
-                  </div>
-                </div>
-
-                {user.agencyId && (
-                  <div className="glass-subtle rounded-lg p-4">
-                    <p className="text-sm text-slate-400">Agency ID</p>
-                    <p className="font-mono text-sm text-slate-200 truncate">{user.agencyId}</p>
-                  </div>
-                )}
-
-                <div className="pt-4 border-t border-white/10">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-400">Status</span>
-                    <Badge variant="success">Active</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Info Message */}
+    <div className="p-8 space-y-8">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <Card variant="glass-subtle">
-            <CardContent className="py-6">
-              <p className="text-center text-slate-400">
-                <strong>Segment 4 In Progress:</strong> Dashboard analytics components added. User/Agency management UI and API routes coming next.
-              </p>
+          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+          <p className="text-slate-400 mt-1">Welcome back, {user.email}</p>
+        </div>
+        <Badge variant="success" className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+          Online
+        </Badge>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard 
+          title="Total Leads" 
+          value="2,847" 
+          change="+12.5%" 
+          trend="up"
+          icon={<Target className="h-5 w-5" />}
+          color="primary"
+        />
+        <StatCard 
+          title="Active Campaigns" 
+          value="12" 
+          change="+3 new" 
+          trend="up"
+          icon={<TrendingUp className="h-5 w-5" />}
+          color="green"
+        />
+        <StatCard 
+          title="Team Members" 
+          value="8" 
+          change="No change" 
+          trend="neutral"
+          icon={<UserPlus className="h-5 w-5" />}
+          color="blue"
+        />
+        <StatCard 
+          title="Data Sources" 
+          value="5" 
+          change="2 pending" 
+          trend="neutral"
+          icon={<Database className="h-5 w-5" />}
+          color="amber"
+        />
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Activity Feed */}
+        <div className="lg:col-span-2">
+          <Card variant="glass">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-primary-400" />
+                Recent Activity
+              </CardTitle>
+              <button className="text-sm text-primary-400 hover:text-primary-300 transition-colors">
+                View All
+              </button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ActivityItem 
+                title="New user registered"
+                description="researcher@agency.com joined the platform"
+                time="15 minutes ago"
+                type="user"
+              />
+              <ActivityItem 
+                title="Campaign created"
+                description="Q1 2026 Lead Generation campaign started"
+                time="2 hours ago"
+                type="campaign"
+              />
+              <ActivityItem 
+                title="50 new leads added"
+                description="Leads imported from scraping session"
+                time="5 hours ago"
+                type="lead"
+              />
+              <ActivityItem 
+                title="Report generated"
+                description="Monthly performance report ready"
+                time="1 day ago"
+                type="report"
+              />
             </CardContent>
           </Card>
         </div>
-      </Container>
-    </DashboardLayout>
+
+        {/* Profile Card */}
+        <div>
+          <Card variant="glass-strong">
+            <CardHeader>
+              <CardTitle>Your Profile</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 border border-white/10 flex items-center justify-center">
+                  {getRoleIcon()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-lg font-semibold text-white truncate">{user.email}</p>
+                  <p className="text-sm text-slate-400">{getRoleLabel()}</p>
+                </div>
+              </div>
+
+              {user.agencyId && (
+                <div className="glass-subtle rounded-xl p-4">
+                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Agency ID</p>
+                  <p className="font-mono text-sm text-slate-200 truncate">{user.agencyId}</p>
+                </div>
+              )}
+
+              <div className="pt-4 border-t border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">Status</span>
+                  <Badge variant="success">Active</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">Role</span>
+                  <span className="text-sm text-white">{getRoleLabel()}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }
 
+// Stat Card Component
+function StatCard({ 
+  title, 
+  value, 
+  change, 
+  trend, 
+  icon, 
+  color 
+}: { 
+  title: string; 
+  value: string; 
+  change: string; 
+  trend: 'up' | 'down' | 'neutral';
+  icon: React.ReactNode;
+  color: 'primary' | 'green' | 'blue' | 'amber';
+}) {
+  const colorClasses = {
+    primary: 'from-primary-500/20 to-primary-600/10 border-primary-500/20 text-primary-400',
+    green: 'from-green-500/20 to-green-600/10 border-green-500/20 text-green-400',
+    blue: 'from-blue-500/20 to-blue-600/10 border-blue-500/20 text-blue-400',
+    amber: 'from-amber-500/20 to-amber-600/10 border-amber-500/20 text-amber-400',
+  };
 
+  return (
+    <div className={`glass rounded-2xl p-6 bg-gradient-to-br ${colorClasses[color].split(' ').slice(0, 2).join(' ')} border ${colorClasses[color].split(' ')[2]}`}>
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-3 rounded-xl bg-white/5 ${colorClasses[color].split(' ')[3]}`}>
+          {icon}
+        </div>
+        {trend !== 'neutral' && (
+          <div className={`flex items-center gap-1 text-xs ${trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
+            {trend === 'up' ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+            {change}
+          </div>
+        )}
+        {trend === 'neutral' && (
+          <span className="text-xs text-slate-400">{change}</span>
+        )}
+      </div>
+      <p className="text-3xl font-bold text-white mb-1">{value}</p>
+      <p className="text-sm text-slate-400">{title}</p>
+    </div>
+  );
+}
+
+// Activity Item Component
+function ActivityItem({ 
+  title, 
+  description, 
+  time, 
+  type 
+}: { 
+  title: string; 
+  description: string; 
+  time: string; 
+  type: 'user' | 'campaign' | 'lead' | 'report';
+}) {
+  const typeColors = {
+    user: 'bg-blue-500/20 text-blue-400',
+    campaign: 'bg-green-500/20 text-green-400',
+    lead: 'bg-purple-500/20 text-purple-400',
+    report: 'bg-amber-500/20 text-amber-400',
+  };
+
+  const typeIcons = {
+    user: <Users className="h-4 w-4" />,
+    campaign: <Target className="h-4 w-4" />,
+    lead: <UserPlus className="h-4 w-4" />,
+    report: <TrendingUp className="h-4 w-4" />,
+  };
+
+  return (
+    <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+      <div className={`p-2 rounded-lg ${typeColors[type]}`}>
+        {typeIcons[type]}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-white">{title}</p>
+        <p className="text-sm text-slate-400 truncate">{description}</p>
+      </div>
+      <span className="text-xs text-slate-500 whitespace-nowrap">{time}</span>
+    </div>
+  );
+}

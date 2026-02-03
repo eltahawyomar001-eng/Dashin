@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { DashboardLayout } from '../../../components/DashboardLayout';
 import {
   Container,
   PageHeader,
@@ -211,8 +210,7 @@ export default function UsersPage() {
   ];
 
   return (
-    <DashboardLayout>
-      <Container>
+    <Container>
         <PageHeader
           title="Users"
           description="Manage user accounts and permissions"
@@ -315,6 +313,5 @@ export default function UsersPage() {
           onConfirm={handleDelete}
         />
       </Container>
-    </DashboardLayout>
   );
 }

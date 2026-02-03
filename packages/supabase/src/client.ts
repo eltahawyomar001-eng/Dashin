@@ -4,11 +4,6 @@ import type { Database } from './database.types';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-type CookieMethods = {
-  getAll: () => { name: string; value: string }[];
-  setAll: (cookies: { name: string; value: string; options?: Record<string, unknown> }[]) => void;
-};
-
 // ============================================================================
 // BROWSER CLIENT - For Client Components
 // ============================================================================

@@ -29,7 +29,7 @@ export default function LoginPage() {
     } else {
       // Redirect to the original destination or dashboard
       const redirect = searchParams.get('redirect') || '/dashboard';
-      router.push(redirect);
+      router.push(redirect as '/dashboard');
     }
   };
 
@@ -69,7 +69,7 @@ export default function LoginPage() {
                 placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                icon={<Mail className="h-4 w-4" />}
+                leftIcon={<Mail className="h-4 w-4" />}
                 required
               />
 
@@ -79,7 +79,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                icon={<Lock className="h-4 w-4" />}
+                leftIcon={<Lock className="h-4 w-4" />}
                 required
               />
 
@@ -89,7 +89,7 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full" loading={loading} disabled={loading}>
+              <Button type="submit" className="w-full" isLoading={loading} disabled={loading}>
                 Sign In
               </Button>
             </form>

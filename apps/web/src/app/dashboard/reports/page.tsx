@@ -203,17 +203,17 @@ export default function ReportsPage() {
 
   const getStatusBadge = (status: 'active' | 'paused' | 'error' | 'completed' | 'processing' | 'failed') => {
     const badges = {
-      active: { color: 'bg-green-100 text-green-700', icon: <CheckCircle2 size={14} /> },
-      paused: { color: 'bg-gray-100 text-gray-700', icon: <AlertCircle size={14} /> },
-      error: { color: 'bg-red-100 text-red-700', icon: <XCircle size={14} /> },
-      completed: { color: 'bg-green-100 text-green-700', icon: <CheckCircle2 size={14} /> },
-      processing: { color: 'bg-blue-100 text-blue-700', icon: <Clock size={14} /> },
-      failed: { color: 'bg-red-100 text-red-700', icon: <XCircle size={14} /> },
+      active: { color: 'bg-green-500/20 text-green-400 border-green-500/30', icon: <CheckCircle2 size={14} /> },
+      paused: { color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', icon: <AlertCircle size={14} /> },
+      error: { color: 'bg-red-500/20 text-red-400 border-red-500/30', icon: <XCircle size={14} /> },
+      completed: { color: 'bg-green-500/20 text-green-400 border-green-500/30', icon: <CheckCircle2 size={14} /> },
+      processing: { color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: <Clock size={14} /> },
+      failed: { color: 'bg-red-500/20 text-red-400 border-red-500/30', icon: <XCircle size={14} /> },
     };
 
     const badge = badges[status];
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${badge.color}`}>
         {badge.icon}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
@@ -222,10 +222,10 @@ export default function ReportsPage() {
 
   const getFormatIcon = (format: 'pdf' | 'csv' | 'xlsx' | 'json') => {
     const icons = {
-      pdf: <FileText size={16} className="text-red-600" />,
-      csv: <FileSpreadsheet size={16} className="text-green-600" />,
-      xlsx: <FileSpreadsheet size={16} className="text-green-700" />,
-      json: <FileJson size={16} className="text-blue-600" />,
+      pdf: <FileText size={16} className="text-red-400" />,
+      csv: <FileSpreadsheet size={16} className="text-green-400" />,
+      xlsx: <FileSpreadsheet size={16} className="text-green-500" />,
+      json: <FileJson size={16} className="text-blue-400" />,
     };
     return icons[format];
   };
@@ -238,19 +238,19 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-8 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-white mb-2">Reports</h1>
+          <p className="text-slate-400">
             Generate, schedule, and manage analytics reports
           </p>
         </div>
 
         <button
           onClick={() => alert('Schedule Report feature coming soon')}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
         >
           <Plus size={20} />
           Schedule Report
@@ -258,10 +258,10 @@ export default function ReportsPage() {
       </div>
 
       {/* Report Templates */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6">
+      <div className="glass rounded-2xl p-6">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Report Templates</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className="text-xl font-semibold text-white">Report Templates</h2>
+          <p className="text-sm text-slate-400 mt-1">
             Pre-configured report templates for common analytics needs
           </p>
         </div>
@@ -270,37 +270,37 @@ export default function ReportsPage() {
           {REPORT_TEMPLATES.map((template) => (
             <div
               key={template.id}
-              className={`border-2 rounded-lg p-4 cursor-pointer transition-all hover:shadow-md ${
+              className={`glass-subtle border-2 rounded-xl p-4 cursor-pointer transition-all hover:border-primary-500/50 ${
                 selectedTemplate === template.id
-                  ? 'border-purple-500 bg-purple-50'
-                  : 'border-gray-200 hover:border-purple-300'
+                  ? 'border-primary-500 bg-primary-500/10'
+                  : 'border-white/10 hover:bg-white/5'
               }`}
               onClick={() => setSelectedTemplate(template.id)}
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
+                <div className="p-2 bg-primary-500/20 rounded-xl text-primary-400">
                   {template.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">{template.name}</h3>
+                  <h3 className="font-semibold text-white truncate">{template.name}</h3>
                 </div>
               </div>
 
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+              <p className="text-sm text-slate-400 mb-3 line-clamp-2">
                 {template.description}
               </p>
 
               <div className="space-y-2">
-                <div className="text-xs text-gray-500">
-                  <span className="font-medium">Metrics:</span> {template.metrics.length}
+                <div className="text-xs text-slate-500">
+                  <span className="font-medium text-slate-400">Metrics:</span> {template.metrics.length}
                 </div>
-                <div className="text-xs text-gray-500">
-                  <span className="font-medium">Charts:</span> {template.charts.length}
+                <div className="text-xs text-slate-500">
+                  <span className="font-medium text-slate-400">Charts:</span> {template.charts.length}
                 </div>
               </div>
 
               <button
-                className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors"
+                className="w-full mt-3 flex items-center justify-center gap-2 px-3 py-2 bg-primary-500 text-white text-sm rounded-xl hover:bg-primary-600 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
                   alert(`Generating ${template.name} report...`);
@@ -315,10 +315,10 @@ export default function ReportsPage() {
       </div>
 
       {/* Scheduled Reports */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6">
+      <div className="glass rounded-2xl p-6">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Scheduled Reports</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className="text-xl font-semibold text-white">Scheduled Reports</h2>
+          <p className="text-sm text-slate-400 mt-1">
             Automated reports delivered on a regular schedule
           </p>
         </div>
@@ -326,63 +326,63 @@ export default function ReportsPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+              <tr className="border-b border-white/10">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">
                   Report Name
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">
                   Frequency
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">
                   Next Run
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">
                   Recipients
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">
                   Format
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">
                   Status
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-400">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody>
               {SCHEDULED_REPORTS.map((report) => (
-                <tr key={report.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={report.id} className="border-b border-white/5 hover:bg-white/5">
                   <td className="py-3 px-4">
-                    <div className="font-medium text-gray-900">{report.name}</div>
+                    <div className="font-medium text-white">{report.name}</div>
                     {report.lastRun && (
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-slate-500">
                         Last run: {formatDate(report.lastRun)}
                       </div>
                     )}
                   </td>
                   <td className="py-3 px-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Calendar size={16} className="text-gray-400" />
+                    <div className="flex items-center gap-2 text-sm text-slate-300">
+                      <Calendar size={16} className="text-slate-500" />
                       {frequencyLabels[report.frequency]}
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Clock size={16} className="text-gray-400" />
+                    <div className="flex items-center gap-2 text-sm text-slate-300">
+                      <Clock size={16} className="text-slate-500" />
                       {formatDate(report.nextRun)}
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Mail size={16} className="text-gray-400" />
+                    <div className="flex items-center gap-2 text-sm text-slate-300">
+                      <Mail size={16} className="text-slate-500" />
                       {report.recipients.length} recipient{report.recipients.length !== 1 ? 's' : ''}
                     </div>
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       {getFormatIcon(report.format)}
-                      <span className="text-sm text-gray-700 uppercase">{report.format}</span>
+                      <span className="text-sm text-slate-300 uppercase">{report.format}</span>
                     </div>
                   </td>
                   <td className="py-3 px-4">
@@ -391,25 +391,25 @@ export default function ReportsPage() {
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <button
-                        className="p-1 text-gray-400 hover:text-purple-600 transition-colors"
+                        className="p-1 text-slate-500 hover:text-primary-400 transition-colors"
                         title="Edit"
                       >
                         <Edit size={16} />
                       </button>
                       <button
-                        className="p-1 text-gray-400 hover:text-green-600 transition-colors"
+                        className="p-1 text-slate-500 hover:text-green-400 transition-colors"
                         title="Run Now"
                       >
                         <Play size={16} />
                       </button>
                       <button
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                        className="p-1 text-slate-500 hover:text-blue-400 transition-colors"
                         title="Duplicate"
                       >
                         <Copy size={16} />
                       </button>
                       <button
-                        className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                        className="p-1 text-slate-500 hover:text-red-400 transition-colors"
                         title="Delete"
                       >
                         <Trash2 size={16} />
@@ -424,10 +424,10 @@ export default function ReportsPage() {
       </div>
 
       {/* Generated Reports */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6">
+      <div className="glass rounded-2xl p-6">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Reports</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className="text-xl font-semibold text-white">Recent Reports</h2>
+          <p className="text-sm text-slate-400 mt-1">
             Previously generated reports available for download
           </p>
         </div>
@@ -436,16 +436,16 @@ export default function ReportsPage() {
           {GENERATED_REPORTS.map((report) => (
             <div
               key={report.id}
-              className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all"
+              className="flex items-center justify-between p-4 glass-subtle rounded-xl hover:bg-white/10 transition-all"
             >
               <div className="flex items-center gap-4 flex-1 min-w-0">
-                <div className="p-3 bg-gray-100 rounded-lg">
+                <div className="p-3 bg-white/10 rounded-xl">
                   {getFormatIcon(report.format)}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">{report.name}</h3>
-                  <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                  <h3 className="font-semibold text-white truncate">{report.name}</h3>
+                  <div className="flex items-center gap-4 mt-1 text-xs text-slate-500">
                     <span>{report.type}</span>
                     <span>•</span>
                     <span>{formatDate(report.generatedAt)}</span>
@@ -461,7 +461,7 @@ export default function ReportsPage() {
                   
                   {report.status === 'completed' && (
                     <button
-                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white text-sm rounded-xl hover:bg-primary-600 transition-colors"
                       onClick={() => alert(`Downloading ${report.name}...`)}
                     >
                       <Download size={16} />
@@ -477,49 +477,49 @@ export default function ReportsPage() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <FileText size={24} />
+            <div className="p-2 bg-white/10 rounded-xl">
+              <FileText size={24} className="text-purple-400" />
             </div>
             <div>
-              <div className="text-sm opacity-90">Total Reports</div>
-              <div className="text-2xl font-bold">
+              <div className="text-sm text-slate-400">Total Reports</div>
+              <div className="text-2xl font-bold text-white">
                 {GENERATED_REPORTS.length + SCHEDULED_REPORTS.length}
               </div>
             </div>
           </div>
-          <div className="text-sm opacity-90">
+          <div className="text-sm text-slate-400">
             {SCHEDULED_REPORTS.filter(r => r.status === 'active').length} scheduled, {GENERATED_REPORTS.filter(r => r.status === 'completed').length} completed
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-500/30 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <Calendar size={24} />
+            <div className="p-2 bg-white/10 rounded-xl">
+              <Calendar size={24} className="text-green-400" />
             </div>
             <div>
-              <div className="text-sm opacity-90">Next Report</div>
-              <div className="text-2xl font-bold">Today</div>
+              <div className="text-sm text-slate-400">Next Report</div>
+              <div className="text-2xl font-bold text-white">Today</div>
             </div>
           </div>
-          <div className="text-sm opacity-90">
+          <div className="text-sm text-slate-400">
             Daily Lead Report at 8:00 AM
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-sm border border-blue-500/30 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <Download size={24} />
+            <div className="p-2 bg-white/10 rounded-xl">
+              <Download size={24} className="text-blue-400" />
             </div>
             <div>
-              <div className="text-sm opacity-90">Total Downloads</div>
-              <div className="text-2xl font-bold">8.7 MB</div>
+              <div className="text-sm text-slate-400">Total Downloads</div>
+              <div className="text-2xl font-bold text-white">8.7 MB</div>
             </div>
           </div>
-          <div className="text-sm opacity-90">
+          <div className="text-sm text-slate-400">
             Across all generated reports
           </div>
         </div>
