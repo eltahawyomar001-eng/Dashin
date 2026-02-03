@@ -95,17 +95,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Sign in
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('[AuthProvider] Starting signInWithPassword...');
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('[AuthProvider] signInWithPassword response:', { data, error });
+
       if (error) {
+        console.error('[AuthProvider] Sign in error:', error);
         return { error };
       }
 
+      console.log('[AuthProvider] Sign in successful');
       return { error: null };
     } catch (error) {
+      console.error('[AuthProvider] Unexpected error during sign in:', error);
       return { error: error as Error };
     }
   };
