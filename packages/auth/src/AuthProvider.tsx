@@ -83,7 +83,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        // If there's an error getting the session (like token revoked), clear it
+        if (error) {
+          console.warn('[AuthProvider] Session error, clearing local session:', error.message);
+          await supabase.auth.signOut({ scope: 'local' });
+          setSession(null);
+          setSupabaseUser(null);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
         
         setSession(currentSession);
         setSupabaseUser(currentSession?.user ?? null);
@@ -94,6 +105,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
+        // On any error, ensure we're in a clean state
+        await supabase.auth.signOut({ scope: 'local' });
+        setSession(null);
+        setSupabaseUser(null);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -103,7 +119,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
+      async (event, newSession) => {
+        console.log('[AuthProvider] Auth state changed:', event);
+        
+        // Handle token revocation - clear everything and redirect to login
+        if (event === 'TOKEN_REFRESHED' && !newSession) {
+          console.warn('[AuthProvider] Token refresh failed, clearing session');
+          setSession(null);
+          setSupabaseUser(null);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        
+        // Handle sign out
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setSupabaseUser(null);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        
         setSession(newSession);
         setSupabaseUser(newSession?.user ?? null);
 
@@ -127,6 +164,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       console.log('[AuthProvider] Starting signInWithPassword...');
+      
+      // Clear any existing stale session first to prevent token refresh issues
+      // This prevents the "token_revoked" issue when an old session exists
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      if (existingSession) {
+        console.log('[AuthProvider] Clearing existing session before fresh login...');
+        await supabase.auth.signOut({ scope: 'local' });
+      }
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
