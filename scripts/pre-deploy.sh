@@ -119,7 +119,8 @@ echo ""
 echo "12. Checking for latest changes..."
 git fetch origin
 LOCAL=$(git rev-parse @)
-REMOTE=$(git rev-parse @{u})
+# shellcheck disable=SC1083
+REMOTE=$(git rev-parse '@{u}')
 if [ "$LOCAL" = "$REMOTE" ]; then
     check_passed "Up to date with remote"
 else

@@ -1,0 +1,20 @@
+{
+  "css.validate": false,
+  "scss.validate": false,
+  "less.validate": false,
+  "files.associations": {
+    "*.css": "tailwindcss",
+    ".env*": "dotenv"
+  },
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "shellcheck.exclude": [
+    "SC1091"
+  ]
+}

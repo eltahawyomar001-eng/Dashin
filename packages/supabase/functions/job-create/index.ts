@@ -15,11 +15,8 @@ Deno.serve(async (req) => {
     const profile = await getUserProfile(supabase);
     const body = await req.json();
     
-    // Validate required fields
-    const validationError = validateRequiredFields(body, ['data_source_id', 'search_criteria']);
-    if (validationError) {
-      return errorResponse(validationError, 400);
-    }
+    // Validate required fields (throws if invalid)
+    validateRequiredFields(body, ['data_source_id', 'search_criteria']);
     
     const {
       data_source_id,
