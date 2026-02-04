@@ -153,14 +153,14 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {user.publicMetadata?.agencyId && typeof user.publicMetadata.agencyId === 'string' && (
+              {user.publicMetadata?.agencyId && typeof user.publicMetadata.agencyId === 'string' ? (
                 <div className="glass-subtle rounded-xl p-4">
                   <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Agency ID</p>
                   <p className="font-mono text-sm text-slate-200 break-all">
                     {user.publicMetadata.agencyId}
                   </p>
                 </div>
-              )}
+              ) : null}
 
               <div className="pt-4 border-t border-white/10 space-y-3">
                 <div className="flex items-center justify-between">
