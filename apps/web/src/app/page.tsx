@@ -109,10 +109,10 @@ export default function HomePage() {
               </a>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/auth/login" className="text-slate-400 hover:text-white transition-colors">
+              <Link href="/auth/login/sign-in" className="text-slate-400 hover:text-white transition-colors">
                 Sign In
               </Link>
-              <Link href="/auth/signup">
+              <Link href="/auth/signup/sign-up">
                 <Button 
                   size="sm" 
                   className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg shadow-blue-500/25"
@@ -153,7 +153,7 @@ export default function HomePage() {
               Stop guessing, start growing.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/auth/signup">
+              <Link href="/auth/signup/sign-up">
                 <Button 
                   size="lg" 
                   className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8 border-0 shadow-xl shadow-blue-500/25"
@@ -359,7 +359,7 @@ export default function HomePage() {
                 Join thousands of teams already using Dashin to discover and convert high-quality leads.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="/auth/signup">
+                <Link href="/auth/signup/sign-up">
                   <Button
                     size="lg"
                     className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8 border-0 shadow-xl shadow-blue-500/25"
@@ -368,7 +368,7 @@ export default function HomePage() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Link href="/auth/login">
+                <Link href="/auth/login/sign-in">
                   <Button
                     size="lg"
                     variant="secondary"
