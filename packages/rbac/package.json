@@ -9,9 +9,10 @@
     "clean": "rm -rf .turbo node_modules"
   },
   "dependencies": {
-    "react": "^18.2.0",
+    "@clerk/nextjs": "^6.37.1",
+    "@dashin/auth": "workspace:*",
     "@dashin/shared-types": "workspace:*",
-    "@dashin/auth": "workspace:*"
+    "react": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.48",

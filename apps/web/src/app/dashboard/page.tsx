@@ -1,14 +1,15 @@
 'use client';
 
-import { useUser } from '@dashin/auth';
+import { useUser } from '@clerk/nextjs';
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@dashin/ui';
 import { Building2, Shield, Users, TrendingUp, UserPlus, Database, Target, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 export default function DashboardPage() {
-  const user = useUser();
+  const { user, isLoaded } = useUser();
 
   const getRoleIcon = () => {
-    switch (user?.role) {
+    const role = user?.publicMetadata?.role as string;
+    switch (role) {
       case 'super_admin':
         return <Shield className="h-5 w-5 text-accent-400" />;
       case 'agency_admin':
@@ -19,17 +20,18 @@ export default function DashboardPage() {
   };
 
   const getRoleLabel = () => {
+    const role = user?.publicMetadata?.role as string;
     const labels: Record<string, string> = {
       super_admin: 'Super Admin',
       agency_admin: 'Agency Admin',
       researcher: 'Researcher',
       client: 'Client',
     };
-    return labels[user?.role || ''] || 'User';
+    return labels[role || ''] || 'User';
   };
 
   // Show loading state
-  if (!user) {
+  if (!isLoaded || !user) {
     return (
       <div className="p-8">
         <div className="glass rounded-2xl p-8 flex items-center justify-center min-h-[50vh]">
@@ -40,12 +42,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <p className="text-slate-400 mt-1">Welcome back, {user.email}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Dashboard</h1>
+          <p className="text-slate-400 mt-1 text-sm md:text-base">Welcome back, {user.emailAddresses?.[0]?.emailAddress || 'User'}</p>
         </div>
         <Badge variant="success" className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
@@ -90,9 +92,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Activity Feed */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 min-w-0">
           <Card variant="glass">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -133,26 +135,30 @@ export default function DashboardPage() {
         </div>
 
         {/* Profile Card */}
-        <div>
-          <Card variant="glass-strong">
-            <CardHeader>
+        <div className="min-w-0">
+          <Card variant="glass-strong" className="h-full">
+            <CardHeader className="pb-4">
               <CardTitle>Your Profile</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 pb-6">
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 border border-white/10 flex items-center justify-center">
+                <div className="h-16 w-16 flex-shrink-0 rounded-2xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 border border-white/10 flex items-center justify-center">
                   {getRoleIcon()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-lg font-semibold text-white truncate">{user.email}</p>
+                  <p className="text-lg font-semibold text-white truncate">
+                    {user.emailAddresses?.[0]?.emailAddress || 'User'}
+                  </p>
                   <p className="text-sm text-slate-400">{getRoleLabel()}</p>
                 </div>
               </div>
 
-              {user.agencyId && (
+              {user.publicMetadata?.agencyId && typeof user.publicMetadata.agencyId === 'string' && (
                 <div className="glass-subtle rounded-xl p-4">
-                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Agency ID</p>
-                  <p className="font-mono text-sm text-slate-200 truncate">{user.agencyId}</p>
+                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Agency ID</p>
+                  <p className="font-mono text-sm text-slate-200 break-all">
+                    {user.publicMetadata.agencyId}
+                  </p>
                 </div>
               )}
 

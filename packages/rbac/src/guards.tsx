@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useUser } from '@dashin/auth';
+import { useUser } from '@clerk/nextjs';
 import type { UserRole } from '@dashin/shared-types';
 import {
   hasPermission,
@@ -12,8 +12,8 @@ import {
 
 // Hook to check permissions
 export function usePermissions() {
-  const user = useUser();
-  const role = user?.role as UserRole | undefined;
+  const { user } = useUser();
+  const role = (user?.publicMetadata?.role as UserRole) || undefined;
 
   return {
     hasPermission: (permission: Permission) => {
@@ -33,8 +33,8 @@ export function usePermissions() {
 
 // Hook to check role
 export function useRole() {
-  const user = useUser();
-  return user?.role as UserRole | undefined;
+  const { user } = useUser();
+  return (user?.publicMetadata?.role as UserRole) || undefined;
 }
 
 // Component to conditionally render based on permissions

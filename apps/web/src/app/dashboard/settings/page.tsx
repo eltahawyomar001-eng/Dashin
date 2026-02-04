@@ -14,14 +14,14 @@ import {
   useToast,
 } from '@dashin/ui';
 import { Save, Key, Bell, Palette } from 'lucide-react';
-import { useUser } from '@dashin/auth';
+import { useUser } from '@clerk/nextjs';
 
 export default function SettingsPage() {
-  const user = useUser();
+  const { user } = useUser();
   const { showToast } = useToast();
   
   // Profile settings
-  const [email, setEmail] = useState(user?.email || '');
+  const [email, setEmail] = useState(user?.emailAddresses?.[0]?.emailAddress || '');
   
   // Password settings
   const [currentPassword, setCurrentPassword] = useState('');
@@ -88,7 +88,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <Container>
+    <Container size="lg">
       <PageHeader
           title="Settings"
           description="Manage your account settings and preferences"
@@ -121,16 +121,16 @@ export default function SettingsPage() {
                 <div className="glass-subtle rounded-lg p-4">
                   <p className="text-sm text-slate-400">Role</p>
                   <p className="text-sm font-medium text-white capitalize">
-                    {user?.role.replace('_', ' ')}
+                    {((user?.publicMetadata?.role as string) || 'user').replace('_', ' ')}
                   </p>
                 </div>
                 
-                {user?.agencyId && (
+                {user?.publicMetadata?.agencyId && typeof user.publicMetadata.agencyId === 'string' ? (
                   <div className="glass-subtle rounded-lg p-4">
                     <p className="text-sm text-slate-400">Agency ID</p>
-                    <p className="text-sm font-mono text-white">{user.agencyId}</p>
+                    <p className="text-sm font-mono text-white">{user.publicMetadata.agencyId}</p>
                   </div>
-                )}
+                ) : null}
                 
                 <div className="flex justify-end pt-2">
                   <Button type="submit" variant="primary" leftIcon={<Save className="h-4 w-4" />}>

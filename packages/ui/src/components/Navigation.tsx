@@ -65,9 +65,9 @@ export interface NavSectionProps {
 
 export function NavSection({ title, children, className }: NavSectionProps) {
   return (
-    <div className={cn('space-y-1', className)}>
+    <div className={cn('space-y-1 mb-6', className)}>
       {title && (
-        <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <h3 className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
           {title}
         </h3>
       )}
@@ -81,5 +81,5 @@ export interface NavDividerProps {
 }
 
 export function NavDivider({ className }: NavDividerProps) {
-  return <div className={cn('my-4 h-px bg-white/10', className)} />;
+  return <div className={cn('my-6 h-px bg-white/10', className)} />;
 }

@@ -210,7 +210,7 @@ export default function UsersPage() {
   ];
 
   return (
-    <Container>
+    <Container size="lg">
         <PageHeader
           title="Users"
           description="Manage user accounts and permissions"

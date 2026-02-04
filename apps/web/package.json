@@ -18,6 +18,7 @@
     "test:all": "pnpm test && pnpm test:e2e"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.37.1",
     "@dashin/auth": "workspace:*",
     "@dashin/rbac": "workspace:*",
     "@dashin/shared-types": "workspace:*",
@@ -27,7 +28,8 @@
     "lucide-react": "^0.314.0",
     "next": "^14.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "svix": "^1.84.1"
   },
   "devDependencies": {
     "@axe-core/react": "^4.11.0",

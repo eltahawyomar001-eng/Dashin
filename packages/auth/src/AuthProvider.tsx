@@ -11,7 +11,7 @@ interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, role: UserRole, agencyId?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, options?: { role?: UserRole; agencyId?: string; fullName?: string; companyName?: string }) => Promise<{ error: Error | null }>;
   signOut: () => Promise<{ error: Error | null }>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
@@ -28,7 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Only create client on the browser
   const supabase = useMemo(() => {
     if (typeof window === 'undefined') return null;
-    return getSupabaseBrowserClient();
+    console.log('[AuthProvider] Creating Supabase browser client...');
+    const client = getSupabaseBrowserClient();
+    console.log('[AuthProvider] Supabase client created:', !!client);
+    return client;
   }, []);
 
   // Fetch user profile from database
@@ -120,19 +123,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     if (!supabase) {
+      console.error('[AuthProvider] signIn called but supabase is null');
       return { error: new Error('Auth not initialized') };
     }
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      console.log('[AuthProvider] Calling signInWithPassword...');
+      console.log('[AuthProvider] Email:', email);
+      console.log('[AuthProvider] Supabase instance:', supabase);
+      
+      // Add a timeout to detect if the call is hanging
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          console.error('[AuthProvider] TIMEOUT: signInWithPassword took more than 10 seconds');
+          reject(new Error('Sign in timed out after 10 seconds'));
+        }, 10000);
+      });
+      
+      console.log('[AuthProvider] Starting promise race...');
+      const signInPromise = supabase.auth.signInWithPassword({ email, password });
+      console.log('[AuthProvider] signInWithPassword promise created');
+      
+      const { error } = await Promise.race([signInPromise, timeoutPromise]);
+      console.log('[AuthProvider] signInWithPassword result:', error ? error.message : 'success');
       return { error: error as Error | null };
     } catch (error) {
+      console.error('[AuthProvider] signIn exception:', error);
       return { error: error as Error };
     }
   };
 
   // Note: Profile creation is handled by database trigger (handle_new_user) on auth.users insert
   // We just need to call auth.signUp and the trigger will create the profile
-  const signUp = async (email: string, password: string, role: UserRole, agencyId?: string) => {
+  const signUp = async (email: string, password: string, options?: { role?: UserRole; agencyId?: string; fullName?: string; companyName?: string }) => {
     if (!supabase) {
       return { error: new Error('Auth not initialized') };
     }
@@ -142,8 +164,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         options: {
           data: {
-            role,
-            agency_id: agencyId ?? null,
+            role: options?.role ?? 'client',
+            agency_id: options?.agencyId ?? null,
+            full_name: options?.fullName ?? null,
+            company_name: options?.companyName ?? null,
           }
         }
       });
