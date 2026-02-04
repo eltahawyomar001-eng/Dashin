@@ -10,6 +10,11 @@ export default function SignUpPage() {
         </div>
 
         <SignUp 
+          routing="path"
+          path="/auth/signup/sign-up"
+          signInUrl="/auth/login/sign-in"
+          fallbackRedirectUrl="/dashboard"
+          forceRedirectUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: "mx-auto w-full",

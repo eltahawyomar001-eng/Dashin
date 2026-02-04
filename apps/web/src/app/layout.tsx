@@ -40,7 +40,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInUrl="/auth/login/sign-in"
+      signUpUrl="/auth/signup/sign-up"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+    >
       <html lang="en" className={inter.variable}>
         <body className="min-h-screen antialiased">
           <QueryProvider>
