@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
               <Info className="h-5 w-5 flex-shrink-0 text-indigo-400 mt-0.5" />
               <div className="space-y-2">
                 <p>Password reset is handled through the sign-in page.</p>
-                <p>Click "Forgot password?" on the sign-in form to receive a reset link via email.</p>
+                <p>Click &ldquo;Forgot password?&rdquo; on the sign-in form to receive a reset link via email.</p>
               </div>
             </div>
 

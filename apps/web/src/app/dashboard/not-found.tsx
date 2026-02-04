@@ -18,7 +18,7 @@ export default function DashboardNotFound() {
           
           <h1 className="text-4xl font-bold text-white mb-3">Page Not Found</h1>
           <p className="text-lg text-slate-300 mb-2">
-            The dashboard page you're looking for doesn't exist.
+            The dashboard page you&apos;re looking for doesn&apos;t exist.
           </p>
           <p className="text-slate-400 mb-8">
             It may have been moved or removed. Please check the URL or navigate back to the dashboard.
