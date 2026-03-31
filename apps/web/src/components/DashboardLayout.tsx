@@ -13,7 +13,6 @@ import {
   NavDivider,
   Badge,
 } from '@dashin/ui';
-import { useUser, useClerk } from '@clerk/nextjs';
 import {
   LayoutDashboard,
   Search,
@@ -40,8 +39,14 @@ export interface DashboardLayoutProps {
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  // Mock user – replace with real auth when keys are configured
+  const user = {
+    firstName: 'Demo',
+    emailAddresses: [{ emailAddress: 'demo@dashin.app' }],
+    publicMetadata: { role: 'admin' },
+  };
+  const isLoaded = true;
+  const signOut = () => { window.location.href = '/'; };
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationsOpen, setNotificationsOpen] = useState(false);

@@ -1,13 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import { ClerkProvider } from '@clerk/nextjs';
 import { ToastProvider } from '@dashin/ui';
 import { QueryProvider } from '../providers/QueryProvider';
 import './globals.css';
 
 // Force all pages to be server-rendered at request time.
-// ClerkProvider requires NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY which is only
-// available at runtime on Vercel, not during the static-generation build step.
 export const dynamic = 'force-dynamic';
 
 const inter = Inter({
@@ -48,21 +45,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider
-      signInUrl="/auth/login/sign-in"
-      signUpUrl="/auth/signup/sign-up"
-      signInFallbackRedirectUrl="/dashboard"
-      signUpFallbackRedirectUrl="/dashboard"
-    >
-      <html lang="en" className={inter.variable}>
-        <body className="min-h-screen antialiased">
-          <QueryProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
-          </QueryProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-screen antialiased">
+        <QueryProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </QueryProvider>
+      </body>
+    </html>
   );
 }
