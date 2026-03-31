@@ -1,9 +1,14 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ToastProvider } from '@dashin/ui';
 import { QueryProvider } from '../providers/QueryProvider';
 import './globals.css';
+
+// Force all pages to be server-rendered at request time.
+// ClerkProvider requires NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY which is only
+// available at runtime on Vercel, not during the static-generation build step.
+export const dynamic = 'force-dynamic';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -31,6 +36,9 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
   themeColor: '#6366f1',
 };
 
