@@ -31,6 +31,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       agencies: {
         Row: {
@@ -54,6 +55,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       campaigns: {
         Row: {
@@ -83,6 +85,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       clients: {
         Row: {
@@ -109,6 +112,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       leads: {
         Row: {
@@ -174,6 +178,187 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
+      };
+      data_sources: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          type: 'website' | 'api' | 'social_media' | 'database' | 'file' | 'linkedin' | 'apollo' | 'zoominfo' | 'csv';
+          status: 'active' | 'inactive' | 'error' | 'pending';
+          config: Json;
+          credentials: Json;
+          frequency: 'once' | 'hourly' | 'daily' | 'weekly' | 'monthly';
+          last_scraped_at: string | null;
+          next_scheduled_at: string | null;
+          total_records: number;
+          error_count: number;
+          agency_id: string;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          type: 'website' | 'api' | 'social_media' | 'database' | 'file' | 'linkedin' | 'apollo' | 'zoominfo' | 'csv';
+          status?: 'active' | 'inactive' | 'error' | 'pending';
+          config?: Json;
+          credentials?: Json;
+          frequency?: 'once' | 'hourly' | 'daily' | 'weekly' | 'monthly';
+          last_scraped_at?: string | null;
+          next_scheduled_at?: string | null;
+          total_records?: number;
+          error_count?: number;
+          agency_id: string;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          type?: 'website' | 'api' | 'social_media' | 'database' | 'file' | 'linkedin' | 'apollo' | 'zoominfo' | 'csv';
+          status?: 'active' | 'inactive' | 'error' | 'pending';
+          config?: Json;
+          credentials?: Json;
+          frequency?: 'once' | 'hourly' | 'daily' | 'weekly' | 'monthly';
+          last_scraped_at?: string | null;
+          next_scheduled_at?: string | null;
+          total_records?: number;
+          error_count?: number;
+          agency_id?: string;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      scraping_jobs: {
+        Row: {
+          id: string;
+          agency_id: string;
+          data_source_id: string;
+          campaign_id: string | null;
+          status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled' | 'paused';
+          progress: number;
+          records_processed: number;
+          records_qualified: number;
+          records_rejected: number;
+          search_criteria: Json;
+          config: Json;
+          error_count: number;
+          error_message: string | null;
+          started_at: string | null;
+          completed_at: string | null;
+          duration_seconds: number | null;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          agency_id: string;
+          data_source_id: string;
+          campaign_id?: string | null;
+          status?: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled' | 'paused';
+          progress?: number;
+          records_processed?: number;
+          records_qualified?: number;
+          records_rejected?: number;
+          search_criteria?: Json;
+          config?: Json;
+          error_count?: number;
+          error_message?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          duration_seconds?: number | null;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          agency_id?: string;
+          data_source_id?: string;
+          campaign_id?: string | null;
+          status?: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled' | 'paused';
+          progress?: number;
+          records_processed?: number;
+          records_qualified?: number;
+          records_rejected?: number;
+          search_criteria?: Json;
+          config?: Json;
+          error_count?: number;
+          error_message?: string | null;
+          started_at?: string | null;
+          completed_at?: string | null;
+          duration_seconds?: number | null;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      scraping_job_logs: {
+        Row: {
+          id: string;
+          job_id: string;
+          level: 'info' | 'warning' | 'error';
+          message: string;
+          details: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          job_id: string;
+          level?: 'info' | 'warning' | 'error';
+          message: string;
+          details?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          job_id?: string;
+          level?: 'info' | 'warning' | 'error';
+          message?: string;
+          details?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: string;
+          title: string;
+          message: string;
+          read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type?: string;
+          title: string;
+          message: string;
+          read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          type?: string;
+          title?: string;
+          message?: string;
+          read?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
       };
     };
     Views: {};

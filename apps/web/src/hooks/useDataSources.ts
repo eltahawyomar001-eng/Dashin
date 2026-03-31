@@ -1,32 +1,43 @@
 /**
- * Data Sources & Scraping Jobs API Hooks
- * 
- * React Query hooks for managing data sources and scraping jobs with
- * real-time status updates, job control, and polling support.
+ * Data Sources & Scraping Jobs Hooks
+ *
+ * React Query hooks backed by direct Supabase calls.
+ * Replaces the previous version that called non-existent REST endpoints.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@dashin/ui';
-import { get, post, patch, del, buildQueryString } from '../lib/api-client';
-import type {
-  DataSource,
-  DataSourceListParams,
-  DataSourcesListResponse,
-  DataSourceApiResponse,
-  CreateDataSourcePayload,
-  UpdateDataSourcePayload,
-  ScrapingJobListParams,
-  ScrapingJobsListResponse,
-  ScrapingJobApiResponse,
-  CreateScrapingJobPayload,
-  UpdateScrapingJobPayload,
-} from '@dashin/shared-types';
+import {
+  fetchDataSources,
+  fetchDataSource,
+  createDataSource,
+  updateDataSource,
+  deleteDataSource,
+  toggleDataSourceStatus,
+  fetchScrapingJobs,
+  fetchScrapingJob,
+  createScrapingJob,
+  controlScrapingJob,
+  retryScrapingJob,
+  deleteScrapingJob,
+  fetchScrapingStats,
+  type DataSourceFilters,
+  type ScrapingJobFilters,
+} from '../lib/supabase-scraping';
+import type { Database } from '@dashin/supabase';
 
-// Query Keys
+type DataSourceInsert = Database['public']['Tables']['data_sources']['Insert'];
+type DataSourceUpdate = Database['public']['Tables']['data_sources']['Update'];
+type ScrapingJobInsert = Database['public']['Tables']['scraping_jobs']['Insert'];
+
+// ============================================================================
+// QUERY KEYS
+// ============================================================================
+
 export const dataSourceKeys = {
   all: ['dataSources'] as const,
   lists: () => [...dataSourceKeys.all, 'list'] as const,
-  list: (params: DataSourceListParams) => [...dataSourceKeys.lists(), params] as const,
+  list: (params: DataSourceFilters) => [...dataSourceKeys.lists(), params] as const,
   details: () => [...dataSourceKeys.all, 'detail'] as const,
   detail: (id: string) => [...dataSourceKeys.details(), id] as const,
 };
@@ -34,60 +45,44 @@ export const dataSourceKeys = {
 export const scrapingJobKeys = {
   all: ['scrapingJobs'] as const,
   lists: () => [...scrapingJobKeys.all, 'list'] as const,
-  list: (params: ScrapingJobListParams) => [...scrapingJobKeys.lists(), params] as const,
+  list: (params: ScrapingJobFilters) => [...scrapingJobKeys.lists(), params] as const,
   details: () => [...scrapingJobKeys.all, 'detail'] as const,
   detail: (id: string) => [...scrapingJobKeys.details(), id] as const,
+  stats: () => [...scrapingJobKeys.all, 'stats'] as const,
 };
 
-/**
- * Fetch data sources list with filters
- */
-export function useDataSources(params: DataSourceListParams = {}) {
-  const queryString = buildQueryString(params as unknown as Record<string, unknown>);
-  
+// ============================================================================
+// DATA SOURCE HOOKS
+// ============================================================================
+
+/** Fetch data sources list with filters */
+export function useDataSources(params: DataSourceFilters = {}) {
   return useQuery({
     queryKey: dataSourceKeys.list(params),
-    queryFn: async () => {
-      const response = await get<DataSourcesListResponse>(`/data-sources${queryString}`);
-      return response;
-    },
-    staleTime: 3 * 60 * 1000, // 3 minutes
+    queryFn: () => fetchDataSources(params),
+    staleTime: 3 * 60 * 1000,
   });
 }
 
-/**
- * Fetch single data source by ID
- */
+/** Fetch single data source by ID */
 export function useDataSource(id: string, enabled = true) {
   return useQuery({
     queryKey: dataSourceKeys.detail(id),
-    queryFn: async () => {
-      const response = await get<DataSourceApiResponse>(`/data-sources/${id}`);
-      return response.dataSource;
-    },
+    queryFn: () => fetchDataSource(id),
     enabled: enabled && !!id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 }
 
-/**
- * Create new data source
- */
+/** Create new data source */
 export function useCreateDataSource() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: async (data: CreateDataSourcePayload) => {
-      const response = await post<DataSourceApiResponse, CreateDataSourcePayload>(
-        '/data-sources',
-        data
-      );
-      return response.dataSource;
-    },
+    mutationFn: (data: DataSourceInsert) => createDataSource(data),
     onSuccess: (dataSource) => {
       queryClient.invalidateQueries({ queryKey: dataSourceKeys.lists() });
-      
       showToast({
         type: 'success',
         title: 'Data source created',
@@ -104,53 +99,24 @@ export function useCreateDataSource() {
   });
 }
 
-/**
- * Update existing data source
- */
+/** Update existing data source */
 export function useUpdateDataSource() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateDataSourcePayload }) => {
-      const response = await patch<DataSourceApiResponse, UpdateDataSourcePayload>(
-        `/data-sources/${id}`,
-        data
-      );
-      return response.dataSource;
-    },
-    onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: dataSourceKeys.detail(id) });
-      const previousSource = queryClient.getQueryData<DataSource>(dataSourceKeys.detail(id));
-
-      if (previousSource) {
-        queryClient.setQueryData<DataSource>(dataSourceKeys.detail(id), {
-          ...previousSource,
-          ...data,
-          config: {
-            ...previousSource.config,
-            ...data.config,
-          },
-        } as DataSource);
-      }
-
-      return { previousSource };
-    },
+    mutationFn: ({ id, data }: { id: string; data: DataSourceUpdate }) =>
+      updateDataSource(id, data),
     onSuccess: (dataSource) => {
       queryClient.setQueryData(dataSourceKeys.detail(dataSource.id), dataSource);
       queryClient.invalidateQueries({ queryKey: dataSourceKeys.lists() });
-      
       showToast({
         type: 'success',
         title: 'Data source updated',
-        message: `${dataSource.name} has been updated successfully.`,
+        message: `${dataSource.name} has been updated.`,
       });
     },
-    onError: (error: Error, { id }, context) => {
-      if (context?.previousSource) {
-        queryClient.setQueryData(dataSourceKeys.detail(id), context.previousSource);
-      }
-      
+    onError: (error: Error) => {
       showToast({
         type: 'error',
         title: 'Failed to update data source',
@@ -160,22 +126,16 @@ export function useUpdateDataSource() {
   });
 }
 
-/**
- * Delete data source
- */
+/** Delete data source */
 export function useDeleteDataSource() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      await del(`/data-sources/${id}`);
-      return id;
-    },
-    onSuccess: (id) => {
+    mutationFn: (id: string) => deleteDataSource(id),
+    onSuccess: (_result, id) => {
       queryClient.removeQueries({ queryKey: dataSourceKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: dataSourceKeys.lists() });
-      
       showToast({
         type: 'success',
         title: 'Data source deleted',
@@ -192,61 +152,81 @@ export function useDeleteDataSource() {
   });
 }
 
-/**
- * Fetch scraping jobs list with filters and optional polling
- */
-export function useScrapingJobs(params: ScrapingJobListParams = {}, pollingInterval?: number) {
-  const queryString = buildQueryString(params as unknown as Record<string, unknown>);
-  
-  return useQuery({
-    queryKey: scrapingJobKeys.list(params),
-    queryFn: async () => {
-      const response = await get<ScrapingJobsListResponse>(`/scraping-jobs${queryString}`);
-      return response;
+/** Toggle data source active/inactive */
+export function useToggleDataSourceStatus() {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, currentStatus }: { id: string; currentStatus: string }) =>
+      toggleDataSourceStatus(id, currentStatus as any),
+    onSuccess: (dataSource) => {
+      queryClient.setQueryData(dataSourceKeys.detail(dataSource.id), dataSource);
+      queryClient.invalidateQueries({ queryKey: dataSourceKeys.lists() });
+      showToast({
+        type: 'success',
+        title: 'Status updated',
+        message: `${dataSource.name} is now ${dataSource.status}.`,
+      });
     },
-    staleTime: 30 * 1000, // 30 seconds (short for real-time feel)
-    refetchInterval: pollingInterval || false, // Enable polling if specified
+    onError: (error: Error) => {
+      showToast({
+        type: 'error',
+        title: 'Failed to update status',
+        message: error.message,
+      });
+    },
   });
 }
 
-/**
- * Fetch single scraping job by ID with optional polling
- */
+// ============================================================================
+// SCRAPING JOB HOOKS
+// ============================================================================
+
+/** Fetch scraping jobs with optional polling for running jobs */
+export function useScrapingJobs(params: ScrapingJobFilters = {}, pollingInterval?: number) {
+  return useQuery({
+    queryKey: scrapingJobKeys.list(params),
+    queryFn: () => fetchScrapingJobs(params),
+    staleTime: 30 * 1000,
+    refetchInterval: pollingInterval || false,
+  });
+}
+
+/** Fetch single scraping job with optional polling */
 export function useScrapingJob(id: string, enabled = true, pollingInterval?: number) {
   return useQuery({
     queryKey: scrapingJobKeys.detail(id),
-    queryFn: async () => {
-      const response = await get<ScrapingJobApiResponse>(`/scraping-jobs/${id}`);
-      return response.job;
-    },
+    queryFn: () => fetchScrapingJob(id),
     enabled: enabled && !!id,
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: pollingInterval || false, // Poll for status updates
+    staleTime: 30 * 1000,
+    refetchInterval: pollingInterval || false,
   });
 }
 
-/**
- * Create and start new scraping job
- */
+/** Fetch aggregated scraping stats */
+export function useScrapingStats() {
+  return useQuery({
+    queryKey: scrapingJobKeys.stats(),
+    queryFn: fetchScrapingStats,
+    staleTime: 60 * 1000,
+  });
+}
+
+/** Create and queue a new scraping job */
 export function useCreateScrapingJob() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: async (data: CreateScrapingJobPayload) => {
-      const response = await post<ScrapingJobApiResponse, CreateScrapingJobPayload>(
-        '/scraping-jobs',
-        data
-      );
-      return response.job;
-    },
-    onSuccess: (job) => {
+    mutationFn: (data: ScrapingJobInsert) => createScrapingJob(data),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: scrapingJobKeys.lists() });
-      
+      queryClient.invalidateQueries({ queryKey: scrapingJobKeys.stats() });
       showToast({
         type: 'success',
         title: 'Scraping job created',
-        message: `Job #${job.id.slice(0, 8)} has been started.`,
+        message: 'Job queued successfully.',
       });
     },
     onError: (error: Error) => {
@@ -259,99 +239,56 @@ export function useCreateScrapingJob() {
   });
 }
 
-/**
- * Update scraping job status or configuration
- */
-export function useUpdateScrapingJob() {
+/** Control a scraping job (start / pause / resume / cancel) */
+export function useControlScrapingJob() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateScrapingJobPayload }) => {
-      const response = await patch<ScrapingJobApiResponse, UpdateScrapingJobPayload>(
-        `/scraping-jobs/${id}`,
-        data
-      );
-      return response.job;
-    },
-    onSuccess: (job) => {
-      queryClient.setQueryData(scrapingJobKeys.detail(job.id), job);
+    mutationFn: ({ id, action }: { id: string; action: 'start' | 'pause' | 'resume' | 'cancel' }) =>
+      controlScrapingJob(id, action),
+    onSuccess: (job, { action }) => {
       queryClient.invalidateQueries({ queryKey: scrapingJobKeys.lists() });
-      
+      queryClient.invalidateQueries({ queryKey: scrapingJobKeys.stats() });
+      if (job?.id) {
+        queryClient.setQueryData(scrapingJobKeys.detail(job.id), job);
+      }
+      const labels: Record<string, string> = {
+        start: 'started',
+        pause: 'paused',
+        resume: 'resumed',
+        cancel: 'cancelled',
+      };
       showToast({
         type: 'success',
-        title: 'Job updated',
-        message: `Job status updated to ${job.status}.`,
+        title: `Job ${labels[action]}`,
+        message: `Scraping job has been ${labels[action]}.`,
       });
     },
     onError: (error: Error) => {
       showToast({
         type: 'error',
-        title: 'Failed to update job',
+        title: 'Job control failed',
         message: error.message,
       });
     },
   });
 }
 
-/**
- * Cancel running scraping job
- */
-export function useCancelScrapingJob() {
-  const queryClient = useQueryClient();
-  const { showToast } = useToast();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await post<ScrapingJobApiResponse, { action: string }>(
-        `/scraping-jobs/${id}/cancel`,
-        { action: 'cancel' }
-      );
-      return response.job;
-    },
-    onSuccess: (job) => {
-      queryClient.setQueryData(scrapingJobKeys.detail(job.id), job);
-      queryClient.invalidateQueries({ queryKey: scrapingJobKeys.lists() });
-      
-      showToast({
-        type: 'success',
-        title: 'Job cancelled',
-        message: 'Scraping job has been cancelled.',
-      });
-    },
-    onError: (error: Error) => {
-      showToast({
-        type: 'error',
-        title: 'Failed to cancel job',
-        message: error.message,
-      });
-    },
-  });
-}
-
-/**
- * Retry failed scraping job
- */
+/** Retry a failed scraping job */
 export function useRetryScrapingJob() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await post<ScrapingJobApiResponse, { action: string }>(
-        `/scraping-jobs/${id}/retry`,
-        { action: 'retry' }
-      );
-      return response.job;
-    },
-    onSuccess: (job) => {
-      queryClient.setQueryData(scrapingJobKeys.detail(job.id), job);
+    mutationFn: (id: string) => retryScrapingJob(id),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: scrapingJobKeys.lists() });
-      
+      queryClient.invalidateQueries({ queryKey: scrapingJobKeys.stats() });
       showToast({
         type: 'success',
         title: 'Job restarted',
-        message: 'Scraping job has been restarted.',
+        message: 'Scraping job has been queued for retry.',
       });
     },
     onError: (error: Error) => {
@@ -364,22 +301,17 @@ export function useRetryScrapingJob() {
   });
 }
 
-/**
- * Delete scraping job and its data
- */
+/** Delete a scraping job */
 export function useDeleteScrapingJob() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      await del(`/scraping-jobs/${id}`);
-      return id;
-    },
-    onSuccess: (id) => {
+    mutationFn: (id: string) => deleteScrapingJob(id),
+    onSuccess: (_result, id) => {
       queryClient.removeQueries({ queryKey: scrapingJobKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: scrapingJobKeys.lists() });
-      
+      queryClient.invalidateQueries({ queryKey: scrapingJobKeys.stats() });
       showToast({
         type: 'success',
         title: 'Job deleted',

@@ -216,9 +216,9 @@ export function useWebSocket(
         )
         .subscribe((status: string) => {
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Subscribed to scraping_jobs updates');
+            console.log('[OK] Subscribed to scraping_jobs updates');
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ Error subscribing to scraping_jobs');
+            console.error('[ERROR] Error subscribing to scraping_jobs');
             setConnectionState('error');
           }
         });
@@ -237,9 +237,9 @@ export function useWebSocket(
         )
         .subscribe((status: string) => {
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Subscribed to campaigns updates');
+            console.log('[OK] Subscribed to campaigns updates');
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ Error subscribing to campaigns');
+            console.error('[ERROR] Error subscribing to campaigns');
             setConnectionState('error');
           }
         });
@@ -258,9 +258,9 @@ export function useWebSocket(
         )
         .subscribe((status: string) => {
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Subscribed to leads updates');
+            console.log('[OK] Subscribed to leads updates');
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ Error subscribing to leads');
+            console.error('[ERROR] Error subscribing to leads');
             setConnectionState('error');
           }
         });
@@ -273,9 +273,9 @@ export function useWebSocket(
         })
         .subscribe((status: string) => {
           if (status === 'SUBSCRIBED') {
-            console.log('✅ Subscribed to notifications');
+            console.log('[OK] Subscribed to notifications');
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ Error subscribing to notifications');
+            console.error('[ERROR] Error subscribing to notifications');
             setConnectionState('error');
           }
         });
@@ -292,7 +292,7 @@ export function useWebSocket(
       setError(null);
       retryCountRef.current = 0; // Reset retry count on successful connection
     } catch (err) {
-      console.error('❌ WebSocket subscription error:', err);
+      console.error('[ERROR] WebSocket subscription error:', err);
       setError(err instanceof Error ? err : new Error('Subscription failed'));
       setConnectionState('error');
       scheduleReconnect();
@@ -311,7 +311,7 @@ export function useWebSocket(
         supabaseRef.current?.removeChannel(channel);
       });
       channelsRef.current = [];
-      console.log('🔌 Unsubscribed from all channels');
+      console.log('[DISCONNECT] Unsubscribed from all channels');
     }
   }, []);
 
@@ -319,7 +319,7 @@ export function useWebSocket(
   const scheduleReconnect = useCallback(() => {
     if (retryCountRef.current >= MAX_RETRIES) {
       console.error(
-        `❌ Max retries (${MAX_RETRIES}) reached. Giving up reconnection.`
+        `[ERROR] Max retries (${MAX_RETRIES}) reached. Giving up reconnection.`
       );
       setConnectionState('error');
       return;
@@ -330,11 +330,11 @@ export function useWebSocket(
     setConnectionState('reconnecting');
 
     console.log(
-      `🔄 Reconnecting in ${delay}ms (attempt ${retryCountRef.current}/${MAX_RETRIES})`
+      `[RETRY] Reconnecting in ${delay}ms (attempt ${retryCountRef.current}/${MAX_RETRIES})`
     );
 
     retryTimeoutRef.current = setTimeout(() => {
-      console.log('🔄 Attempting reconnection...');
+      console.log('[RETRY] Attempting reconnection...');
       unsubscribe();
       subscribe();
     }, delay);
@@ -342,7 +342,7 @@ export function useWebSocket(
 
   // Manual reconnect function
   const reconnect = useCallback(() => {
-    console.log('🔄 Manual reconnection triggered');
+    console.log('[RETRY] Manual reconnection triggered');
     retryCountRef.current = 0; // Reset retry count
     unsubscribe();
     subscribe();

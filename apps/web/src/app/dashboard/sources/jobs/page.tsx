@@ -1,118 +1,65 @@
 'use client';
 
-import { useState } from 'react';
-import { Clock } from 'lucide-react';
-import type { ScrapingJob } from '@dashin/shared-types';
+import { Clock, AlertCircle } from 'lucide-react';
 import {
   PageHeader,
   Container,
   ScrapingQueue,
-  useToast,
+  Spinner,
 } from '@dashin/ui';
-
-// Mock data for demonstration
-const MOCK_JOBS: ScrapingJob[] = [
-  {
-    id: '1',
-    dataSourceId: '1',
-    dataSourceName: 'LinkedIn Company Profiles',
-    status: 'running',
-    startedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 mins ago
-    recordsScraped: 342,
-    recordsFailed: 5,
-    progress: 67,
-    currentPage: 34,
-    totalPages: 50,
-    retryCount: 0,
-    logs: [],
-    createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    dataSourceId: '2',
-    dataSourceName: 'Industry News API',
-    status: 'completed',
-    startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    completedAt: new Date(Date.now() - 1.5 * 60 * 60 * 1000).toISOString(),
-    recordsScraped: 128,
-    recordsFailed: 0,
-    progress: 100,
-    retryCount: 0,
-    logs: [],
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 1.5 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '3',
-    dataSourceId: '3',
-    dataSourceName: 'Competitor Pricing Pages',
-    status: 'failed',
-    startedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    recordsScraped: 12,
-    recordsFailed: 8,
-    progress: 45,
-    retryCount: 2,
-    errorMessage: 'Failed to parse pricing data: selector not found',
-    logs: [],
-    createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '4',
-    dataSourceId: '1',
-    dataSourceName: 'LinkedIn Company Profiles',
-    status: 'pending',
-    recordsScraped: 0,
-    recordsFailed: 0,
-    progress: 0,
-    retryCount: 0,
-    logs: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import {
+  useScrapingJobs,
+  useRetryScrapingJob,
+  useControlScrapingJob,
+} from '../../../../hooks/useDataSources';
 
 export default function ScrapingJobsPage() {
-  const { showToast } = useToast();
-  const [jobs, setJobs] = useState<ScrapingJob[]>(MOCK_JOBS);
+  // Real data from Supabase, polling every 5 seconds for live updates
+  const { data: jobsData, isLoading, isError, error } = useScrapingJobs({}, 5000);
+  const retryMutation = useRetryScrapingJob();
+  const controlMutation = useControlScrapingJob();
 
-  const handleRetry = (job: ScrapingJob) => {
-    setJobs(jobs.map((j) =>
-      j.id === job.id ? { ...j, status: 'pending' as const, retryCount: j.retryCount + 1 } : j
-    ));
-    showToast({
-      type: 'success',
-      title: 'Job Queued',
-      message: `${job.dataSourceName} will retry shortly`,
-    });
+  const jobs = jobsData?.data ?? [];
+
+  // Map DB rows to the ScrapingQueue expected shape
+  const mappedJobs = jobs.map((job: any) => ({
+    id: job.id,
+    dataSourceId: job.data_source_id,
+    dataSourceName: job.data_sources?.name ?? `Source ${job.data_source_id?.slice(0, 8)}`,
+    status: job.status,
+    startedAt: job.started_at,
+    completedAt: job.completed_at,
+    recordsScraped: job.records_processed ?? 0,
+    recordsFailed: job.records_rejected ?? 0,
+    progress: job.progress ?? 0,
+    currentPage: undefined,
+    totalPages: undefined,
+    retryCount: job.error_count ?? 0,
+    errorMessage: job.error_message,
+    logs: [],
+    createdAt: job.created_at,
+    updatedAt: job.updated_at,
+  }));
+
+  const runningCount = mappedJobs.filter((j: any) => j.status === 'running').length;
+  const pendingCount = mappedJobs.filter((j: any) => j.status === 'pending').length;
+  const completedCount = mappedJobs.filter((j: any) => j.status === 'completed').length;
+  const failedCount = mappedJobs.filter((j: any) => j.status === 'failed').length;
+
+  const handleRetry = (job: any) => {
+    retryMutation.mutate(job.id);
   };
 
-  const handleCancel = (job: ScrapingJob) => {
-    setJobs(jobs.map((j) =>
-      j.id === job.id ? { ...j, status: 'cancelled' as const } : j
-    ));
-    showToast({
-      type: 'info',
-      title: 'Job Cancelled',
-      message: `${job.dataSourceName} scraping cancelled`,
-    });
+  const handleCancel = (job: any) => {
+    controlMutation.mutate({ id: job.id, action: 'cancel' });
   };
 
-  const handleViewDetails = (job: ScrapingJob) => {
-    showToast({
-      type: 'info',
-      title: 'View Details',
-      message: `Viewing details for ${job.dataSourceName} (not yet implemented)`,
-    });
+  const handleViewDetails = (_job: any) => {
+    // TODO: Navigate to job detail page
   };
 
-  const handleViewData = (job: ScrapingJob) => {
-    showToast({
-      type: 'info',
-      title: 'View Data',
-      message: `Viewing data for ${job.dataSourceName} (not yet implemented)`,
-    });
+  const handleViewData = (_job: any) => {
+    // TODO: Navigate to scraped data view
   };
 
   return (
@@ -122,15 +69,14 @@ export default function ScrapingJobsPage() {
         description="Monitor and manage your web scraping jobs"
       />
 
+      {/* Stats Summary */}
       <div className="mb-6 grid gap-4 md:grid-cols-4">
         <div className="glass-panel p-4 rounded-xl">
           <div className="flex items-center gap-2 mb-1">
             <Clock className="h-4 w-4 text-amber-400" />
             <p className="text-sm text-slate-400">Running</p>
           </div>
-          <p className="text-2xl font-semibold text-white">
-            {jobs.filter((j) => j.status === 'running').length}
-          </p>
+          <p className="text-2xl font-semibold text-white">{runningCount}</p>
         </div>
 
         <div className="glass-panel p-4 rounded-xl">
@@ -138,9 +84,7 @@ export default function ScrapingJobsPage() {
             <Clock className="h-4 w-4 text-slate-400" />
             <p className="text-sm text-slate-400">Pending</p>
           </div>
-          <p className="text-2xl font-semibold text-white">
-            {jobs.filter((j) => j.status === 'pending').length}
-          </p>
+          <p className="text-2xl font-semibold text-white">{pendingCount}</p>
         </div>
 
         <div className="glass-panel p-4 rounded-xl">
@@ -148,9 +92,7 @@ export default function ScrapingJobsPage() {
             <Clock className="h-4 w-4 text-primary-400" />
             <p className="text-sm text-slate-400">Completed</p>
           </div>
-          <p className="text-2xl font-semibold text-white">
-            {jobs.filter((j) => j.status === 'completed').length}
-          </p>
+          <p className="text-2xl font-semibold text-white">{completedCount}</p>
         </div>
 
         <div className="glass-panel p-4 rounded-xl">
@@ -158,19 +100,36 @@ export default function ScrapingJobsPage() {
             <Clock className="h-4 w-4 text-red-400" />
             <p className="text-sm text-slate-400">Failed</p>
           </div>
-          <p className="text-2xl font-semibold text-white">
-            {jobs.filter((j) => j.status === 'failed').length}
-          </p>
+          <p className="text-2xl font-semibold text-white">{failedCount}</p>
         </div>
       </div>
 
-      <ScrapingQueue
-        jobs={jobs}
-        onRetry={handleRetry}
-        onCancel={handleCancel}
-        onViewDetails={handleViewDetails}
-        onViewData={handleViewData}
-      />
+      {/* Loading */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Spinner className="h-8 w-8" />
+        </div>
+      )}
+
+      {/* Error */}
+      {isError && (
+        <div className="glass-panel p-8 rounded-xl text-center">
+          <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-2">Failed to load scraping jobs</h3>
+          <p className="text-slate-400">{(error as Error)?.message ?? 'Unknown error'}</p>
+        </div>
+      )}
+
+      {/* Jobs Queue */}
+      {!isLoading && !isError && (
+        <ScrapingQueue
+          jobs={mappedJobs as any}
+          onRetry={handleRetry}
+          onCancel={handleCancel}
+          onViewDetails={handleViewDetails}
+          onViewData={handleViewData}
+        />
+      )}
     </Container>
   );
 }

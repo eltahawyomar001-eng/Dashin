@@ -9,9 +9,9 @@
     "clean": "rm -rf .turbo node_modules"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.3",
-    "@supabase/ssr": "^0.1.0",
-    "@dashin/shared-types": "workspace:*"
+    "@dashin/shared-types": "workspace:*",
+    "@supabase/ssr": "^0.10.0",
+    "@supabase/supabase-js": "^2.39.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

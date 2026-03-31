@@ -1,69 +1,49 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, Button, Input, Badge } from '@dashin/ui';
-import { Search, Plus, Play, Pause, Trash2, Globe, Clock, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { Card, CardContent, Button, Input, Badge, Modal, Spinner } from '@dashin/ui';
+import {
+  Search,
+  Plus,
+  Play,
+  Pause,
+  Trash2,
+  Globe,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Loader,
+  XCircle,
+  RotateCw,
+} from 'lucide-react';
 import { Can } from '@dashin/rbac';
-
-interface ScrapingJob {
-  id: string;
-  name: string;
-  url: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  progress: number;
-  recordsFound: number;
-  lastRun?: string;
-  nextRun?: string;
-}
-
-const MOCK_JOBS: ScrapingJob[] = [
-  {
-    id: '1',
-    name: 'LinkedIn Sales Navigator - Tech Companies',
-    url: 'https://linkedin.com/sales/search/...',
-    status: 'running',
-    progress: 67,
-    recordsFound: 342,
-    lastRun: '2024-02-04T10:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'Crunchbase - Series A Startups',
-    url: 'https://crunchbase.com/search/...',
-    status: 'completed',
-    progress: 100,
-    recordsFound: 1289,
-    lastRun: '2024-02-04T08:30:00Z',
-  },
-  {
-    id: '3',
-    name: 'Apollo.io - Healthcare Executives',
-    url: 'https://apollo.io/search/...',
-    status: 'pending',
-    progress: 0,
-    recordsFound: 0,
-    nextRun: '2024-02-04T14:00:00Z',
-  },
-  {
-    id: '4',
-    name: 'ZoomInfo - Enterprise Contacts',
-    url: 'https://zoominfo.com/search/...',
-    status: 'failed',
-    progress: 23,
-    recordsFound: 89,
-    lastRun: '2024-02-04T09:15:00Z',
-  },
-];
+import {
+  useScrapingJobs,
+  useScrapingStats,
+  useControlScrapingJob,
+  useDeleteScrapingJob,
+  useRetryScrapingJob,
+} from '../../../hooks/useDataSources';
 
 export default function ScrapingPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteJobId, setDeleteJobId] = useState<string | null>(null);
 
-  const filteredJobs = MOCK_JOBS.filter(job =>
-    job.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.url.toLowerCase().includes(searchTerm.toLowerCase())
+  // Real data from Supabase via React Query
+  const { data: jobsData, isLoading, isError, error } = useScrapingJobs({}, 5000);
+  const { data: stats } = useScrapingStats();
+  const controlJob = useControlScrapingJob();
+  const deleteJob = useDeleteScrapingJob();
+  const retryJob = useRetryScrapingJob();
+
+  const jobs = jobsData?.data ?? [];
+  const filteredJobs = jobs.filter(
+    (job: any) =>
+      (job.data_sources?.name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusIcon = (status: ScrapingJob['status']) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'running':
         return <Loader className="h-4 w-4 animate-spin text-blue-400" />;
@@ -71,19 +51,37 @@ export default function ScrapingPage() {
         return <CheckCircle className="h-4 w-4 text-green-400" />;
       case 'failed':
         return <AlertCircle className="h-4 w-4 text-red-400" />;
+      case 'cancelled':
+        return <XCircle className="h-4 w-4 text-slate-400" />;
+      case 'paused':
+        return <Pause className="h-4 w-4 text-amber-400" />;
       default:
         return <Clock className="h-4 w-4 text-slate-400" />;
     }
   };
 
-  const getStatusBadge = (status: ScrapingJob['status']) => {
-    const variants = {
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, 'info' | 'success' | 'danger' | 'default' | 'warning'> = {
       running: 'info',
       completed: 'success',
       failed: 'danger',
       pending: 'default',
-    } as const;
-    return variants[status];
+      paused: 'warning',
+      cancelled: 'default',
+    };
+    return variants[status] ?? 'default';
+  };
+
+  const handleStart = (id: string) => controlJob.mutate({ id, action: 'start' });
+  const handlePause = (id: string) => controlJob.mutate({ id, action: 'pause' });
+  const handleResume = (id: string) => controlJob.mutate({ id, action: 'resume' });
+  const handleCancel = (id: string) => controlJob.mutate({ id, action: 'cancel' });
+  const handleRetry = (id: string) => retryJob.mutate(id);
+  const confirmDelete = () => {
+    if (deleteJobId) {
+      deleteJob.mutate(deleteJobId);
+      setDeleteJobId(null);
+    }
   };
 
   return (
@@ -95,7 +93,9 @@ export default function ScrapingPage() {
             <Search className="h-6 w-6 md:h-8 md:w-8 text-primary-400" />
             Web Scraping
           </h1>
-          <p className="text-slate-400 mt-1 text-sm md:text-base">Automated data collection from web sources</p>
+          <p className="text-slate-400 mt-1 text-sm md:text-base">
+            Automated data collection from web sources
+          </p>
         </div>
         <Can permission="scrape:create">
           <Button className="gap-2">
@@ -112,7 +112,9 @@ export default function ScrapingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-400 text-sm">Total Jobs</p>
-                <p className="text-3xl font-bold text-white mt-1">{MOCK_JOBS.length}</p>
+                <p className="text-3xl font-bold text-white mt-1">
+                  {stats?.totalJobs ?? 0}
+                </p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-primary-500/20 flex items-center justify-center">
                 <Search className="h-6 w-6 text-primary-400" />
@@ -127,7 +129,7 @@ export default function ScrapingPage() {
               <div>
                 <p className="text-slate-400 text-sm">Running</p>
                 <p className="text-3xl font-bold text-white mt-1">
-                  {MOCK_JOBS.filter(j => j.status === 'running').length}
+                  {stats?.runningJobs ?? 0}
                 </p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-blue-500/20 flex items-center justify-center">
@@ -143,7 +145,7 @@ export default function ScrapingPage() {
               <div>
                 <p className="text-slate-400 text-sm">Completed</p>
                 <p className="text-3xl font-bold text-white mt-1">
-                  {MOCK_JOBS.filter(j => j.status === 'completed').length}
+                  {stats?.completedJobs ?? 0}
                 </p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-green-500/20 flex items-center justify-center">
@@ -159,7 +161,7 @@ export default function ScrapingPage() {
               <div>
                 <p className="text-slate-400 text-sm">Records Found</p>
                 <p className="text-3xl font-bold text-white mt-1">
-                  {MOCK_JOBS.reduce((sum, j) => sum + j.recordsFound, 0).toLocaleString()}
+                  {(stats?.totalRecords ?? 0).toLocaleString()}
                 </p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-accent-500/20 flex items-center justify-center">
@@ -170,7 +172,7 @@ export default function ScrapingPage() {
         </Card>
       </div>
 
-      {/* Search and Filters */}
+      {/* Search */}
       <Card variant="glass">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
@@ -187,97 +189,140 @@ export default function ScrapingPage() {
         </CardContent>
       </Card>
 
+      {/* Loading / Error states */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Spinner className="h-8 w-8" />
+        </div>
+      )}
+
+      {isError && (
+        <Card variant="glass">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-white mb-2">Failed to load jobs</h3>
+            <p className="text-slate-400">{(error as Error)?.message ?? 'Unknown error'}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Scraping Jobs List */}
-      <div className="space-y-4">
-        {filteredJobs.map((job) => (
-          <Card key={job.id} variant="glass">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    {getStatusIcon(job.status)}
-                    <h3 className="text-lg font-semibold text-white">{job.name}</h3>
-                    <Badge variant={getStatusBadge(job.status)}>
-                      {job.status}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-sm text-slate-400 mb-3">
-                    <Globe className="h-4 w-4" />
-                    <span className="truncate">{job.url}</span>
-                  </div>
-
-                  {job.status === 'running' && (
-                    <div className="mb-3">
-                      <div className="flex items-center justify-between text-sm mb-2">
-                        <span className="text-slate-400">Progress</span>
-                        <span className="text-white font-medium">{job.progress}%</span>
-                      </div>
-                      <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-primary-500 to-accent-500 transition-all duration-300"
-                          style={{ width: `${job.progress}%` }}
-                        />
-                      </div>
+      {!isLoading && !isError && (
+        <div className="space-y-4">
+          {filteredJobs.map((job: any) => (
+            <Card key={job.id} variant="glass">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      {getStatusIcon(job.status)}
+                      <h3 className="text-lg font-semibold text-white">
+                        {job.data_sources?.name ?? `Job ${job.id.slice(0, 8)}`}
+                      </h3>
+                      <Badge variant={getStatusBadge(job.status)}>{job.status}</Badge>
                     </div>
-                  )}
 
-                  <div className="flex items-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-400">Records:</span>
-                      <span className="text-white font-medium">{job.recordsFound.toLocaleString()}</span>
-                    </div>
-                    {job.lastRun && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-400">Last run:</span>
-                        <span className="text-white font-medium">
-                          {new Date(job.lastRun).toLocaleString()}
-                        </span>
-                      </div>
-                    )}
-                    {job.nextRun && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-400">Next run:</span>
-                        <span className="text-white font-medium">
-                          {new Date(job.nextRun).toLocaleString()}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 ml-4">
-                  <Can permission="scrape:create">
-                    {job.status === 'pending' && (
-                      <Button variant="ghost" size="sm">
-                        <Play className="h-4 w-4" />
-                      </Button>
-                    )}
                     {job.status === 'running' && (
-                      <Button variant="ghost" size="sm">
-                        <Pause className="h-4 w-4" />
-                      </Button>
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className="text-slate-400">Progress</span>
+                          <span className="text-white font-medium">{job.progress}%</span>
+                        </div>
+                        <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-primary-500 to-accent-500 transition-all duration-300"
+                            style={{ width: `${job.progress}%` }}
+                          />
+                        </div>
+                      </div>
                     )}
-                  </Can>
-                  <Can permission="scrape:create">
-                    <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </Can>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
-      {filteredJobs.length === 0 && (
+                    {job.error_message && (
+                      <div className="mb-3 flex items-start gap-2 text-xs text-red-400 bg-red-500/10 rounded-lg p-2">
+                        <XCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        <span>{job.error_message}</span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-400">Records:</span>
+                        <span className="text-white font-medium">
+                          {(job.records_processed ?? 0).toLocaleString()}
+                        </span>
+                      </div>
+                      {job.started_at && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400">Started:</span>
+                          <span className="text-white font-medium">
+                            {new Date(job.started_at).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 ml-4">
+                    <Can permission="scrape:create">
+                      {job.status === 'pending' && (
+                        <Button variant="ghost" size="sm" onClick={() => handleStart(job.id)}>
+                          <Play className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {job.status === 'running' && (
+                        <Button variant="ghost" size="sm" onClick={() => handlePause(job.id)}>
+                          <Pause className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {job.status === 'paused' && (
+                        <Button variant="ghost" size="sm" onClick={() => handleResume(job.id)}>
+                          <Play className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {job.status === 'running' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-amber-400 hover:text-amber-300"
+                          onClick={() => handleCancel(job.id)}
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {job.status === 'failed' && (
+                        <Button variant="ghost" size="sm" onClick={() => handleRetry(job.id)}>
+                          <RotateCw className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </Can>
+                    <Can permission="scrape:create">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300"
+                        onClick={() => setDeleteJobId(job.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </Can>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!isLoading && !isError && filteredJobs.length === 0 && (
         <Card variant="glass">
           <CardContent className="p-12 text-center">
             <Search className="h-12 w-12 text-slate-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-white mb-2">No scraping jobs found</h3>
             <p className="text-slate-400 mb-6">
-              {searchTerm ? 'Try adjusting your search terms' : 'Create your first scraping job to get started'}
+              {searchTerm
+                ? 'Try adjusting your search terms'
+                : 'Create your first scraping job to get started'}
             </p>
             <Can permission="scrape:create">
               <Button>
@@ -287,6 +332,29 @@ export default function ScrapingPage() {
             </Can>
           </CardContent>
         </Card>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteJobId && (
+        <Modal
+          isOpen={!!deleteJobId}
+          onClose={() => setDeleteJobId(null)}
+          title="Delete Scraping Job"
+        >
+          <div className="space-y-4">
+            <p className="text-slate-300">
+              Are you sure you want to delete this scraping job? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="secondary" onClick={() => setDeleteJobId(null)}>
+                Cancel
+              </Button>
+              <Button variant="danger" onClick={confirmDelete}>
+                Delete Job
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );
